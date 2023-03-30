@@ -6,7 +6,42 @@ set(CMAKE_CXX_STANDARD 17)
 include_directories(.)
 
 add_executable(DeepDendro
-        "layers/parent_layer/Layer.cpp"
-        )
+        activation_funcs/activation_funcs.cpp
+        evaluation_metrics/accuracy.cpp
+        layers/hidden_layer/HiddenLayer.cpp
+        layers/input_layer/InputLayer.cpp
+        layers/parent_layer/Layer.cpp
+        logging/Logger.cpp
+        loss_functions/basic_loss_func.cpp
+        matrices/Matrix.cpp
 
-include_directories(. "layers/parent_layer/Layer.h")
+        model/Model.cpp
+        model_management/recreate_model/recreate_model.cpp
+        model_management/save_model_state/save_model.cpp
+        model_management/to_predict/predict.cpp
+        model_management/to_train/train.cpp
+
+        regularization/data_normalization/data_norm.cpp
+        regularization/dropout/dropout.cpp
+
+        main.cpp )
+
+
+include_directories(.
+        activation_funcs
+        evaluation_metrics
+        layers
+        layers/parent_layer
+        layers/hidden_layer
+        layers/input_layer
+        logging
+        loss_functions
+        matrices
+        model
+        model_management/recreate_model
+        model_management/save_model_state
+        model_management/to_predict
+        model_management/to_train
+        regularization/data_normalization
+        regularization/dropout
+        )
