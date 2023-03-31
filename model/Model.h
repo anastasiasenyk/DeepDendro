@@ -5,9 +5,28 @@
 #ifndef DEEPDENDRO_MODEL_H
 #define DEEPDENDRO_MODEL_H
 
+#include "Layers.h"
+#include "vector"
+#include "actiovation_funcs.h"
+
 
 class Model {
+    std::vector<HiddenLayer> layers;
+    HiddenLayer train_data;
+    VectorXd train_labels;
+    HiddenLayer * save_prev_layer;
 
+public:
+    void addInput(const MatrixXd &data);
+    void addOutput(const VectorXd &labels);
+
+    // by default we have a straight-forward model (no branching)
+    void addLayer(int neurons, activation activationType);
+
+
+    void train(size_t epochs = 10, double learning_rate = 0.005);
+    void test();
+    void create_mini_batches();
 };
 
 

@@ -6,8 +6,15 @@
 #define DEEPDENDRO_LAYER_H
 
 
-class Layer {
+#include <Eigen/Dense>
+using Eigen::MatrixXd;
+using Eigen::VectorXd;
 
+typedef std::pair<int, int> Shape;
+
+class Layer {
+public:
+    Shape shape;
 };
 
 
