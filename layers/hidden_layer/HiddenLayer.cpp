@@ -21,7 +21,6 @@ HiddenLayer::HiddenLayer(const int curr_neurons, HiddenLayer *ancestor, Activati
                                                                                                activ_func{
                                                                                                        activation} {
     weights = MatrixXd::Random(curr_neurons, prev_layer->shape.first);
-    z_values = MatrixXd::Zero(curr_neurons, prev_layer->shape.second);
     a_values = MatrixXd::Zero(curr_neurons, prev_layer->shape.second);
     weights /= 100;
     shape.first = curr_neurons;
@@ -59,7 +58,7 @@ void HiddenLayer::back_prop(double learning_rate) {
     MatrixXd delta = prev_layer->a_values.array() * (1 - prev_layer->a_values.array());
     delta = delta.cwiseProduct(weights.transpose() * delta_next_layer);
 
-    delta_next_layer = delta;
+    prev_layer->delta_next_layer = delta;
 
 // update weights and biases using gradients
     weights -= learning_rate * delta * prev_layer->a_values.transpose();

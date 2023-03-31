@@ -14,7 +14,7 @@ class HiddenLayer : public Layer {
     VectorXd biases;
     MatrixXd z_values;
     MatrixXd a_values;
-    std::function<MatrixXd(MatrixXd)> activ_func;
+    ActivationFunc activ_func;
 
     MatrixXd delta_next_layer;
     HiddenLayer * prev_layer;
