@@ -1,9 +1,12 @@
 cmake_minimum_required(VERSION 3.24)
 project(DeepDendro)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 include_directories(.)
+include_directories(/usr/local/include/eigen3)
+
+
 
 add_executable(DeepDendro
         activation_funcs/activation_funcs.cpp
@@ -45,3 +48,11 @@ include_directories(.
         regularization/data_normalization
         regularization/dropout
         )
+
+
+option(DEBUG "Enable debug output" OFF)
+if (DEBUG)
+    add_compile_definitions(DEBUG)
+endif()
+
+
