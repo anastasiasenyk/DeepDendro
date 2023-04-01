@@ -9,7 +9,7 @@ include_directories(/usr/local/include/eigen3)
 
 
 add_executable(DeepDendro
-        activation_funcs/activation_funcs.cpp
+        activation_funcs/activationFuncs.cpp
         evaluation_metrics/accuracy.cpp
         layers/hidden_layer/HiddenLayer.cpp
         logging/Logger.cpp

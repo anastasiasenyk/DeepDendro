@@ -20,16 +20,19 @@ class HiddenLayer : public Layer {
     HiddenLayer * prev_layer;
 
 public:
-    HiddenLayer();
-    HiddenLayer(const MatrixXd &data);
+    // for first layer
+    HiddenLayer(int curr_neurons, Shape prev_shape, ActivationFunc activation);
 
+    // for further layers
     HiddenLayer(int curr_neurons, HiddenLayer *ancestor, ActivationFunc activation);
 
+
+    void first_forward_prop(const MatrixXd &input);
     void forward_prop();
 
     void first_back_prop(double learning_rate, const VectorXd &labels);
-
     void back_prop(double learning_rate);
+    void last_back_prop(double learning_rate, const MatrixXd &a_values);
 };
 
 

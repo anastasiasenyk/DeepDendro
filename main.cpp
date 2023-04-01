@@ -6,9 +6,7 @@
 
 int main(){
 
-    VectorXd labels = VectorXd::Zero(4);
-    labels[0] = 1; labels[1] = 1; labels[2] = 1; labels[3] = 0;
-
+    VectorXd labels= VectorXd::Zero(4);
 
     Model model;
     model.addInput(MatrixXd::Random(784, 4));

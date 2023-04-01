@@ -12,11 +12,12 @@
 
 class Model {
     std::vector<HiddenLayer> layers;
-    HiddenLayer train_data;
+    MatrixXd train_data;
     VectorXd train_labels;
     HiddenLayer * save_prev_layer;
 
 public:
+    Model();
     void addInput(const MatrixXd &data);
     void addOutput(const VectorXd &labels);
 
