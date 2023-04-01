@@ -5,7 +5,7 @@
 #ifndef DEEPDENDRO_HIDDENLAYER_H
 #define DEEPDENDRO_HIDDENLAYER_H
 
-#include "actiovation_funcs.h"
+#include "activationFuncs.h"
 #include "Layer.h"
 #include "iostream"
 

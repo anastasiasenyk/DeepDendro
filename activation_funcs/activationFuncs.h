@@ -2,9 +2,10 @@
 // Created by Yaroslav Korch on 30.03.2023.
 //
 
-#ifndef DEEPDENDRO_ACTIOVATION_FUNCS_H
-#define DEEPDENDRO_ACTIOVATION_FUNCS_H
+#ifndef DEEPDENDRO_ACTIVATIONFUNCS_H
+#define DEEPDENDRO_ACTIVATIONFUNCS_H
 
+#include <exception>
 #include "Layer.h"
 
 typedef MatrixXd (*ActivationFunc)(const MatrixXd&);
@@ -12,11 +13,18 @@ typedef MatrixXd (*ActivationFunc)(const MatrixXd&);
 enum activation {
     sigmoid,
     relu,
-    tanh,
+    tanhyper,
     softmax
+
 };
 
 MatrixXd ReLU(const MatrixXd& input);
+
+MatrixXd Sigmoid(const MatrixXd& input);
+
+MatrixXd Tanh(const MatrixXd& input);
+
+MatrixXd Softmax(const MatrixXd& input);
 
 ActivationFunc find_activation_func(activation type);
 
@@ -27,4 +35,4 @@ public:
     }
 };
 
-#endif //DEEPDENDRO_ACTIOVATION_FUNCS_H
+#endif //DEEPDENDRO_ACTIVATIONFUNCS_H

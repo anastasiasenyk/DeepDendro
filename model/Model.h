@@ -7,7 +7,7 @@
 
 #include "Layers.h"
 #include "vector"
-#include "actiovation_funcs.h"
+#include "activationFuncs.h"
 
 
 class Model {
