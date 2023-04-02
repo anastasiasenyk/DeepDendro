@@ -16,7 +16,7 @@ class HiddenLayer : public Layer {
     MatrixXd a_values;
     ActivationFunc activ_func;
 
-    MatrixXd delta_next_layer;
+    MatrixXd weight_delta_next_layer;
     HiddenLayer * prev_layer;
 
 public:

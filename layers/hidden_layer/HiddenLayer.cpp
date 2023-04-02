@@ -58,12 +58,13 @@ void HiddenLayer::first_back_prop(double learning_rate, const MatrixXd &labels) 
 
     MatrixXd delta = relu_derivative.cwiseProduct(a_values - labels);
 
-    // assuming it can not be a null pointer!
-    prev_layer->delta_next_layer = delta;
-
     // update weights and biases
-    weights -= learning_rate * delta * prev_layer->a_values.transpose();
-    biases -= learning_rate * delta.rowwise().sum();
+    auto m = static_cast<double> (delta.cols());
+    weights -= learning_rate * (1/m) * delta * prev_layer->a_values.transpose();
+    biases -= learning_rate * (1/m) * delta.rowwise().sum();
+
+    // assuming it can not be a null pointer!
+    prev_layer->weight_delta_next_layer = weights.transpose() * delta;
 }
 
 void HiddenLayer::back_prop(double learning_rate) {
@@ -71,14 +72,16 @@ void HiddenLayer::back_prop(double learning_rate) {
 }
 
 void HiddenLayer::last_back_prop(double learning_rate, const MatrixXd &input){
-    MatrixXd delta = input.array() * (1 - input.array());
+    MatrixXd delta = z_values.array() * (1 - z_values.array());
 
-    // TODO: Here dimensions are wrong. Weights is (8, 16), but delta is (2, 4) haha
-    delta = delta.cwiseProduct(weights.transpose() * delta_next_layer);
+    delta = weight_delta_next_layer.cwiseProduct(delta) ;
 
-    if (prev_layer != nullptr) prev_layer->delta_next_layer = delta;
+    // update weights and biases using gradients2
+    auto m = static_cast<double> (delta.cols());
+    weights -= learning_rate * (1/m) * delta * input.transpose();
+    biases -= learning_rate * (1/m) * delta.rowwise().sum();
 
-// update weights and biases using gradients
-    weights -= learning_rate * delta * input.transpose();
-    biases -= learning_rate * delta.rowwise().sum();
+    if (prev_layer != nullptr) {
+        prev_layer->weight_delta_next_layer = weights.transpose() * delta;
+    }
 }
