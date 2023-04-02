@@ -53,11 +53,10 @@ void HiddenLayer::forward_prop() {
     first_forward_prop(prev_layer->a_values);
 }
 
-void HiddenLayer::first_back_prop(double learning_rate, const VectorXd &labels) {
+void HiddenLayer::first_back_prop(double learning_rate, const MatrixXd &labels) {
     MatrixXd relu_derivative = (a_values.array() > 0.0).cast<double>();
 
-    // TODO: It breaks here because of diff shapes --->
-    MatrixXd delta = relu_derivative.cwiseProduct(a_values - labels.transpose());
+    MatrixXd delta = relu_derivative.cwiseProduct(a_values - labels);
 
     // assuming it can not be a null pointer!
     prev_layer->delta_next_layer = delta;
@@ -73,6 +72,8 @@ void HiddenLayer::back_prop(double learning_rate) {
 
 void HiddenLayer::last_back_prop(double learning_rate, const MatrixXd &input){
     MatrixXd delta = input.array() * (1 - input.array());
+
+    // TODO: Here dimensions are wrong. Weights is (8, 16), but delta is (2, 4) haha
     delta = delta.cwiseProduct(weights.transpose() * delta_next_layer);
 
     if (prev_layer != nullptr) prev_layer->delta_next_layer = delta;

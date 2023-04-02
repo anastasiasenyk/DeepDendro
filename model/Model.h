@@ -13,15 +13,15 @@
 class Model {
     std::vector<HiddenLayer> layers;
     MatrixXd train_data;
-    VectorXd train_labels;
+    MatrixXd train_labels;
     HiddenLayer * save_prev_layer;
 
 public:
     Model();
     void addInput(const MatrixXd &data);
-    void addOutput(const VectorXd &labels);
+    void addOutput(const MatrixXd &labels);
 
-    // by default we have a straight-forward model (no branching)
+    // by default, we have a straight-forward model (no branching)
     void addLayer(int neurons, activation activationType);
 
 

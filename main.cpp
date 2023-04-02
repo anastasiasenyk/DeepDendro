@@ -4,9 +4,9 @@
 
 #include "Model.h"
 
-int main(){
+int main() {
 
-    VectorXd labels= VectorXd::Zero(4);
+    MatrixXd labels = MatrixXd::Zero(2, 4);
 
     Model model;
     model.addInput(MatrixXd::Random(784, 4));

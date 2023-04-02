@@ -15,7 +15,7 @@ Model::Model() {
 void Model::addInput(const MatrixXd &data) {
     train_data = data;
 }
-void Model::addOutput(const VectorXd &labels) {
+void Model::addOutput(const MatrixXd &labels) {
     train_labels = labels;
 }
 
@@ -33,6 +33,9 @@ void Model::addLayer(int neurons, activation activationType) {
 
 void Model::train(size_t epochs, double learning_rate) {
     int j;
+    // TODO: Sigmoid instead for labeling [0/1], when its derivative will be implemented
+    addLayer(train_labels.rows(), activation::relu);
+
     for (size_t i = 0; i < epochs; ++i) {
 
         // first forward prop
