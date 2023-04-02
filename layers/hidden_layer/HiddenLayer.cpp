@@ -54,9 +54,7 @@ void HiddenLayer::forward_prop() {
 }
 
 void HiddenLayer::first_back_prop(double learning_rate, const MatrixXd &labels) {
-    MatrixXd relu_derivative = (a_values.array() > 0.0).cast<double>();
-
-    MatrixXd delta = relu_derivative.cwiseProduct(a_values - labels);
+    MatrixXd delta = a_values - labels;
 
     // update weights and biases
     auto m = static_cast<double> (delta.cols());
@@ -72,9 +70,9 @@ void HiddenLayer::back_prop(double learning_rate) {
 }
 
 void HiddenLayer::last_back_prop(double learning_rate, const MatrixXd &input){
-    MatrixXd delta = z_values.array() * (1 - z_values.array());
+    MatrixXd relu_derivative = (z_values.array() > 0.0).cast<double>();
 
-    delta = weight_delta_next_layer.cwiseProduct(delta) ;
+    MatrixXd delta = weight_delta_next_layer.cwiseProduct(relu_derivative) ;
 
     // update weights and biases using gradients2
     auto m = static_cast<double> (delta.cols());
