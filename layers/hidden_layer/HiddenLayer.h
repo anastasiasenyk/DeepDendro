@@ -14,6 +14,8 @@ class HiddenLayer : public Layer {
     VectorXd biases;
     MatrixXd z_values;
     MatrixXd a_values;
+
+
     ActivationFunc activ_func;
 
     MatrixXd weight_delta_next_layer;
@@ -33,6 +35,7 @@ public:
     void first_back_prop(double learning_rate, const MatrixXd &labels);
     void back_prop(double learning_rate);
     void last_back_prop(double learning_rate, const MatrixXd &a_values);
+    const MatrixXd& getAValues();
 };
 
 

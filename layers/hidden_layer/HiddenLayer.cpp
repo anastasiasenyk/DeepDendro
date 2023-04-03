@@ -83,3 +83,7 @@ void HiddenLayer::last_back_prop(double learning_rate, const MatrixXd &input){
         prev_layer->weight_delta_next_layer = weights.transpose() * delta;
     }
 }
+
+const MatrixXd &HiddenLayer::getAValues() {
+    return a_values;
+}

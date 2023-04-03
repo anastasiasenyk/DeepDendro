@@ -8,6 +8,7 @@
 #include "Layers.h"
 #include "vector"
 #include "activationFuncs.h"
+#include "lossFunc.h"
 
 
 class Model {

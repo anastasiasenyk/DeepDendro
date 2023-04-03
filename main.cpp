@@ -5,8 +5,11 @@
 #include "Model.h"
 
 int main() {
+    srand((unsigned int) time(0));
 
-    MatrixXd labels = MatrixXd::Zero(2, 4);
+    MatrixXd labels = MatrixXd::Random(1, 4);
+    labels = (labels.array() > 0).cast<double>();
+    std::cout << labels << std::endl;
 
     Model model;
     model.addInput(MatrixXd::Random(784, 4));
@@ -14,7 +17,7 @@ int main() {
 
     model.addLayer(16, activation::relu);
     model.addLayer(8, activation::relu);
-    model.train();
+    model.train(1000, 0.05);
 
     return 0;
 }

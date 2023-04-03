@@ -35,7 +35,6 @@ void Model::train(size_t epochs, double learning_rate) {
     int j;
     // TODO: Sigmoid instead for labeling [0/1], when its derivative will be implemented
     addLayer(train_labels.rows(), activation::relu);
-
     for (size_t i = 0; i < epochs; ++i) {
 
         // first forward prop
@@ -43,7 +42,10 @@ void Model::train(size_t epochs, double learning_rate) {
         for (j = 1; j < layers.size();) {
             layers[j++].forward_prop();
         }
-
+#ifdef DEBUG
+        double lossRes = lossFunc().crossEntropy(layers[layers.size()-1].getAValues(), train_labels);
+        std::cout << "After epoch: " << i << " cost: " << lossRes << std::endl;
+#endif
         // first back_prop
         layers.back().first_back_prop(learning_rate, train_labels);
         // all other back props
