@@ -20,7 +20,7 @@ add_executable(DeepDendro
         model_management/save_model_state/save_model.cpp
         model/to_predict/predict.cpp
 
-        regularization/data_normalization/data_norm.cpp
+        regularization/data_normalization/dataProcessing.cpp
         regularization/dropout/dropout.cpp
 
         main.cpp activation_funcs/activationDerivative.cpp activation_funcs/activationDerivative.h)
