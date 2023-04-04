@@ -20,7 +20,7 @@ class HiddenLayer : public Layer {
     ActivationFunc activ_func;
 
     MatrixXd weight_delta_next_layer;
-    HiddenLayer * prev_layer;
+    HiddenLayer *prev_layer;
 
 public:
     // for first layer
@@ -31,12 +31,16 @@ public:
 
 
     void first_forward_prop(const MatrixXd &input);
+
     void forward_prop();
 
     void first_back_prop(double learning_rate, const MatrixXd &labels);
+
     void back_prop(double learning_rate);
+
     void last_back_prop(double learning_rate, const MatrixXd &a_values);
-    const MatrixXd& getAValues();
+
+    const MatrixXd &getAValues();
 };
 
 

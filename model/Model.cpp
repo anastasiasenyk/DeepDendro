@@ -15,12 +15,13 @@ Model::Model() {
 void Model::addInput(const MatrixXd &data) {
     train_data = data;
 }
+
 void Model::addOutput(const MatrixXd &labels) {
     train_labels = labels;
 }
 
 void Model::addLayer(int neurons, activation activationType) {
-    if (save_prev_layer != nullptr){
+    if (save_prev_layer != nullptr) {
         layers.emplace_back(neurons, save_prev_layer, find_activation_func(activationType));
         save_prev_layer = &layers.back();
         return;
@@ -42,7 +43,7 @@ void Model::train(size_t epochs, double learning_rate) {
             layers[j++].forward_prop();
         }
 #ifdef DEBUG
-        double lossRes = lossFunc().crossEntropy(layers[layers.size()-1].getAValues(), train_labels);
+        double lossRes = lossFunc().crossEntropy(layers[layers.size() - 1].getAValues(), train_labels);
         std::cout << "After epoch: " << i << " cost: " << lossRes << std::endl;
 #endif
         // first back_prop
