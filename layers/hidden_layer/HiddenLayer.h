@@ -6,6 +6,7 @@
 #define DEEPDENDRO_HIDDENLAYER_H
 
 #include "activationFuncs.h"
+#include "activationDerivative.h"
 #include "Layer.h"
 #include "iostream"
 

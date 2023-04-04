@@ -3,7 +3,6 @@
 //
 
 #include "activationFuncs.h"
-#include "functional"
 
 
 MatrixXd ReLU(const MatrixXd& input){

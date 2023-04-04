@@ -15,7 +15,6 @@ enum activation {
     relu,
     tanhyper,
     softmax
-
 };
 
 MatrixXd ReLU(const MatrixXd& input);

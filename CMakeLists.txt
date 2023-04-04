@@ -13,7 +13,7 @@ add_executable(DeepDendro
         evaluation_metrics/accuracy.cpp
         layers/hidden_layer/HiddenLayer.cpp
         logging/Logger.cpp
-        loss_functions/basic_loss_func.cpp
+        loss_functions/lossFunc.cpp
 
         model/Model.cpp
         model_management/recreate_model/recreate_model.cpp
@@ -23,7 +23,7 @@ add_executable(DeepDendro
         regularization/data_normalization/data_norm.cpp
         regularization/dropout/dropout.cpp
 
-        main.cpp)
+        main.cpp activation_funcs/activationDerivative.cpp activation_funcs/activationDerivative.h)
 
 
 include_directories(.

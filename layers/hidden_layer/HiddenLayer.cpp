@@ -70,8 +70,8 @@ void HiddenLayer::back_prop(double learning_rate) {
 }
 
 void HiddenLayer::last_back_prop(double learning_rate, const MatrixXd &input){
-    MatrixXd relu_derivative = (z_values.array() > 0.0).cast<double>();
-
+//    MatrixXd relu_derivative = (z_values.array() > 0.0).cast<double>();
+    MatrixXd relu_derivative = ReLUDer(z_values);
     MatrixXd delta = weight_delta_next_layer.cwiseProduct(relu_derivative) ;
 
     // update weights and biases using gradients2
