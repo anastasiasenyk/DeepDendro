@@ -8,19 +8,18 @@
 Model::Model() {
     layers.reserve(10);
     save_prev_layer = nullptr;
-//    train_data = MatrixXd::Zero(1, 1);
-//    train_labels = VectorXd::Zero(1);
 }
 
 void Model::addInput(const MatrixXd &data) {
     train_data = data;
 }
+
 void Model::addOutput(const MatrixXd &labels) {
     train_labels = labels;
 }
 
 void Model::addLayer(int neurons, activation activationType) {
-    if (save_prev_layer != nullptr){
+    if (save_prev_layer != nullptr) {
         layers.emplace_back(neurons, save_prev_layer, find_activation_func(activationType));
         save_prev_layer = &layers.back();
         return;
@@ -32,19 +31,44 @@ void Model::addLayer(int neurons, activation activationType) {
 
 
 void Model::train(size_t epochs, double learning_rate) {
+
+#ifdef LOGGING
+    show_console_cursor(false);
+    const std::string out_of_all = " / " + std::to_string(epochs) + " ";
+    ProgressBar bar{
+            indicators::option::BarWidth{50},
+            indicators::option::Start{"["},
+            indicators::option::Fill{"■"},
+            indicators::option::Lead{"■"},
+            indicators::option::Remainder{"-"},
+            indicators::option::End{" ]"},
+
+            indicators::option::PrefixText{"DeepDendro Epoch: _ "},
+            indicators::option::PostfixText{"Loss function: _"},
+            indicators::option::ShowElapsedTime{true},
+            indicators::option::ShowRemainingTime{true},
+            indicators::option::ForegroundColor{Color::red},
+            indicators::option::FontStyles{std::vector<FontStyle>{FontStyle::bold}},
+            indicators::option::MaxProgress{epochs}
+    };
+
+#endif
     int j;
     addLayer(train_labels.rows(), activation::sigmoid);
     for (size_t i = 0; i < epochs; ++i) {
-
         // first forward prop
         layers[0].first_forward_prop(train_data);
         for (j = 1; j < layers.size();) {
             layers[j++].forward_prop();
         }
-#ifdef DEBUG
-        double lossRes = lossFunc().crossEntropy(layers[layers.size()-1].getAValues(), train_labels);
-        std::cout << "After epoch: " << i << " cost: " << lossRes << std::endl;
+
+#ifdef LOGGING
+        bar.set_option(indicators::option::PrefixText{"DeepDendro epoch: " + std::to_string(i + 1) + out_of_all});
+        bar.tick();
+        bar.set_option(indicators::option::PostfixText{
+                "Loss function: " + std::to_string(lossFunc().crossEntropy(layers.back().getAValues(), train_labels))});
 #endif
+
         // first back_prop
         layers.back().first_back_prop(learning_rate, train_labels);
         // all other back props

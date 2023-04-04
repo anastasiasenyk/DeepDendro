@@ -12,7 +12,6 @@ add_executable(DeepDendro
         activation_funcs/activationFuncs.cpp
         evaluation_metrics/accuracy.cpp
         layers/hidden_layer/HiddenLayer.cpp
-        logging/Logger.cpp
         loss_functions/lossFunc.cpp
 
         model/Model.cpp
@@ -33,8 +32,8 @@ include_directories(.
         layers/parent_layer
         layers/hidden_layer
         logging
+
         loss_functions
-        matrices
         model
         model_management/recreate_model
         model_management/save_model_state
@@ -45,9 +44,12 @@ include_directories(.
 
 
 
-option(DEBUG "Enable debug output" ON)
+option(DEBUG "Enable debug output" OFF)
 if (DEBUG)
     add_compile_definitions(DEBUG)
 endif()
 
-
+option(LOGGING "Enable debug output" ON)
+if (LOGGING)
+    add_compile_definitions(LOGGING)
+endif()

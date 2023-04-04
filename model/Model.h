@@ -9,17 +9,20 @@
 #include "vector"
 #include "activationFuncs.h"
 #include "lossFunc.h"
+#include "logging.h"
 
 
 class Model {
     std::vector<HiddenLayer> layers;
     MatrixXd train_data;
     MatrixXd train_labels;
-    HiddenLayer * save_prev_layer;
+    HiddenLayer *save_prev_layer;
 
 public:
     Model();
+
     void addInput(const MatrixXd &data);
+
     void addOutput(const MatrixXd &labels);
 
     // by default, we have a straight-forward model (no branching)
@@ -27,7 +30,9 @@ public:
 
 
     void train(size_t epochs = 10, double learning_rate = 0.005);
+
     void test();
+
     void create_mini_batches();
 };
 
