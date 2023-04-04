@@ -4,11 +4,11 @@
 
 #include "activationDerivative.h"
 
-MatrixXd ReLUDer(const MatrixXd& input) {
+MatrixXd ReLUDer(const MatrixXd &input) {
     return (input.array() > 0.0).cast<double>();
 }
 
-MatrixXd SigmoidDer(const MatrixXd& input) {
+MatrixXd SigmoidDer(const MatrixXd &input) {
     // Compute the sigmoid activation function
     MatrixXd sigmoid_x = 1.0 / (1.0 + (-input).array().exp());
 
@@ -18,28 +18,26 @@ MatrixXd SigmoidDer(const MatrixXd& input) {
     return sigmoid_deriv_x;
 }
 
-MatrixXd TanhDer(const MatrixXd& input) {
+MatrixXd TanhDer(const MatrixXd &input) {
     // TODO: implement
     return input;
 }
 
-MatrixXd SoftmaxDer(const MatrixXd& input) {
+MatrixXd SoftmaxDer(const MatrixXd &input) {
     // TODO: implement
     return input;
 }
 
-
-ActivationFunc find_activation_der(activation type){
-    switch (type){
-        case relu:
-            return ReLUDer;
-        case sigmoid:
-            return SigmoidDer;
-        case tanhyper:
-            return TanhDer;
-        case softmax:
-            return SoftmaxDer;
-        default:
-            throw ActivationDerivativeNotFound();
+ActivationFuncDer find_activation_der(ActivationFunc activation_func) {
+    if (activation_func == ReLU) {
+        return ReLUDer;
+    } else if (activation_func == Sigmoid) {
+        return SigmoidDer;
+    } else if (activation_func == Tanh) {
+        return TanhDer;
+    } else if (activation_func == Softmax) {
+        return SoftmaxDer;
+    } else {
+        throw ActivationDerivativeNotFound();
     }
 }

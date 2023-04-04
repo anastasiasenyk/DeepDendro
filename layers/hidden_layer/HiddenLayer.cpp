@@ -43,7 +43,7 @@ HiddenLayer::HiddenLayer(const int curr_neurons, HiddenLayer *ancestor, Activati
 }
 
 
-void HiddenLayer::first_forward_prop(const MatrixXd &input){
+void HiddenLayer::first_forward_prop(const MatrixXd &input) {
     z_values = weights * input;
     z_values.colwise() += biases;
     a_values = activ_func(z_values);
@@ -58,8 +58,8 @@ void HiddenLayer::first_back_prop(double learning_rate, const MatrixXd &labels) 
 
     // update weights and biases
     auto m = static_cast<double> (delta.cols());
-    weights -= learning_rate * (1/m) * delta * prev_layer->a_values.transpose();
-    biases -= learning_rate * (1/m) * delta.rowwise().sum();
+    weights -= learning_rate * (1 / m) * delta * prev_layer->a_values.transpose();
+    biases -= learning_rate * (1 / m) * delta.rowwise().sum();
 
     // assuming it can not be a null pointer!
     prev_layer->weight_delta_next_layer = weights.transpose() * delta;
@@ -69,15 +69,15 @@ void HiddenLayer::back_prop(double learning_rate) {
     last_back_prop(learning_rate, prev_layer->a_values);
 }
 
-void HiddenLayer::last_back_prop(double learning_rate, const MatrixXd &input){
+void HiddenLayer::last_back_prop(double learning_rate, const MatrixXd &input) {
 //    MatrixXd relu_derivative = (z_values.array() > 0.0).cast<double>();
-    MatrixXd relu_derivative = ReLUDer(z_values);
-    MatrixXd delta = weight_delta_next_layer.cwiseProduct(relu_derivative) ;
+    MatrixXd relu_derivative = find_activation_der(activ_func)(z_values);
+    MatrixXd delta = weight_delta_next_layer.cwiseProduct(relu_derivative);
 
     // update weights and biases using gradients2
     auto m = static_cast<double> (delta.cols());
-    weights -= learning_rate * (1/m) * delta * input.transpose();
-    biases -= learning_rate * (1/m) * delta.rowwise().sum();
+    weights -= learning_rate * (1 / m) * delta * input.transpose();
+    biases -= learning_rate * (1 / m) * delta.rowwise().sum();
 
     if (prev_layer != nullptr) {
         prev_layer->weight_delta_next_layer = weights.transpose() * delta;
