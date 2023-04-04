@@ -13,7 +13,6 @@ Model::Model() {
 void Model::addInput(const MatrixXd &data) {
     train_data = data;
 }
-
 void Model::addOutput(const MatrixXd &labels) {
     train_labels = labels;
 }
@@ -56,6 +55,7 @@ void Model::train(size_t epochs, double learning_rate) {
     int j;
     addLayer(train_labels.rows(), activation::sigmoid);
     for (size_t i = 0; i < epochs; ++i) {
+
         // first forward prop
         layers[0].first_forward_prop(train_data);
         for (j = 1; j < layers.size();) {
