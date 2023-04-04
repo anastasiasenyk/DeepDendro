@@ -21,7 +21,7 @@ MatrixXd TanhDer(const MatrixXd& input);
 MatrixXd SoftmaxDer(const MatrixXd& input);
 
 
-ActivationFuncDer find_activation_der(activation type);
+ActivationFuncDer find_activation_der(ActivationFunc activation_func);
 
 class ActivationDerivativeNotFound: public std::exception {
 public:

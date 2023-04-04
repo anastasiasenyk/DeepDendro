@@ -28,18 +28,16 @@ MatrixXd SoftmaxDer(const MatrixXd& input) {
     return input;
 }
 
-
-ActivationFunc find_activation_der(activation type){
-    switch (type){
-        case relu:
-            return ReLUDer;
-        case sigmoid:
-            return SigmoidDer;
-        case tanhyper:
-            return TanhDer;
-        case softmax:
-            return SoftmaxDer;
-        default:
-            throw ActivationDerivativeNotFound();
+ActivationFuncDer find_activation_der(ActivationFunc activation_func){
+    if (activation_func == ReLU){
+        return ReLUDer;
+    } else if (activation_func == Sigmoid){
+        return SigmoidDer;
+    } else if (activation_func == Tanh){
+        return TanhDer;
+    } else if (activation_func == Softmax){
+        return SoftmaxDer;
+    } else {
+        throw ActivationDerivativeNotFound();
     }
 }

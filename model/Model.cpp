@@ -33,8 +33,7 @@ void Model::addLayer(int neurons, activation activationType) {
 
 void Model::train(size_t epochs, double learning_rate) {
     int j;
-    // TODO: Sigmoid instead for labeling [0/1], when its derivative will be implemented
-    addLayer(train_labels.rows(), activation::relu);
+    addLayer(train_labels.rows(), activation::sigmoid);
     for (size_t i = 0; i < epochs; ++i) {
 
         // first forward prop
