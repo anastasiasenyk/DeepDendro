@@ -11,6 +11,7 @@ int main() {
     labels = (labels.array() > 0).cast<double>();
 //    std::cout << labels << std::endl;
 
+
     Model model;
     model.addInput(MatrixXd::Random(784, 400));
     model.addOutput(labels);
