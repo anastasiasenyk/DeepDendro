@@ -6,6 +6,7 @@
 #define DEEPDENDRO_MNISTPROCESS_H
 
 #include <fstream>
+#include <map>
 #include "dataProcessing.h"
 #include "HiddenLayer.h"
 
@@ -15,12 +16,15 @@ class MNISTProcess : public DataProcessing {
     std::ifstream label;
     char number;
 public:
+
     void skipHeaders(const std::string &imageFilename, const std::string &labelFilename,
                                    int skipBytesImg, int skipBytesLab);
 
     VectorXd readImg(int height, int width);
 
     VectorXd readLbl();
+
+    std::map<std::string, std::pair<MatrixXd, MatrixXd>> getData(std::string pathToMNIST);
 
     ~MNISTProcess();
 };

@@ -47,7 +47,7 @@ void Model::train(size_t epochs, double learning_rate) {
             indicators::option::PostfixText{"Loss function: _"},
             indicators::option::ShowElapsedTime{true},
             indicators::option::ShowRemainingTime{true},
-            indicators::option::ForegroundColor{Color::red},
+            indicators::option::ForegroundColor{Color::blue},
             indicators::option::FontStyles{std::vector<FontStyle>{FontStyle::bold}},
             indicators::option::MaxProgress{epochs}
     };
@@ -108,7 +108,6 @@ double Model::calc_accuracy(const MatrixXd &predicted, const MatrixXd &true_labe
     double num_samples = predicted.cols();
 
     MatrixXd diff = (predicted - true_labels).cwiseAbs2();
-
 
     VectorXd col_sums = diff.colwise().sum();
     double num_identical_cols = (col_sums.array() == 0).count();
