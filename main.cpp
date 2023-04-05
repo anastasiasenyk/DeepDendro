@@ -9,13 +9,14 @@
 int main() {
     srand((unsigned int) time(0));
 
-    int numImg = 60000;
-    int numTrainImg = std::floor(numImg * 0.95);
-    int numTestImg = numImg - numTrainImg;
+    int numTrainImg = 60000;
+    int numTestImg = 10000;
 
 
-    MNISTProcess mnistProcess = MNISTProcess();
-    mnistProcess.skipHeaders("../MNIST_ORG/train-images.idx3-ubyte", "../MNIST_ORG/train-labels.idx1-ubyte", 16, 8);
+    MNISTProcess mnistProcessTrain = MNISTProcess();
+    mnistProcessTrain.skipHeaders("../MNIST_ORG/train-images.idx3-ubyte", "../MNIST_ORG/train-labels.idx1-ubyte", 16, 8);
+    MNISTProcess mnistProcessTest = MNISTProcess();
+    mnistProcessTest.skipHeaders("../MNIST_ORG/t10k-images.idx3-ubyte", "../MNIST_ORG/t10k-labels.idx1-ubyte", 16, 8);
 
     MatrixXd trainImages(784, numTrainImg);
     MatrixXd trainLabels(10, numTrainImg);
@@ -23,16 +24,17 @@ int main() {
     MatrixXd testLabels(10, numTestImg);
 
 
+
     for (int sample = 0; sample < numTrainImg; ++sample) {
-        VectorXd oneHotLabel = mnistProcess.readLbl();
-        VectorXd flattenedImage = mnistProcess.readImg(28, 28);
+        VectorXd oneHotLabel = mnistProcessTrain.readLbl();
+        VectorXd flattenedImage = mnistProcessTrain.readImg(28, 28);
         trainImages.col(sample) = flattenedImage;
         trainLabels.col(sample) = oneHotLabel;
     }
 
     for (int sample = 0; sample < numTestImg; ++sample) {
-        VectorXd oneHotLabel = mnistProcess.readLbl();
-        VectorXd flattenedImage = mnistProcess.readImg(28, 28);
+        VectorXd oneHotLabel = mnistProcessTest.readLbl();
+        VectorXd flattenedImage = mnistProcessTest.readImg(28, 28);
         testImages.col(sample) = flattenedImage;
         testLabels.col(sample) = oneHotLabel;
     }
@@ -59,7 +61,7 @@ int main() {
 
     model.addLayer(16, activation::relu);
     model.addLayer(16, activation::relu);
-    model.train(10000, 0.005);
+    model.train(10, 0.005);
 
     return 0;
 }

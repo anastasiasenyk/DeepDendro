@@ -54,7 +54,7 @@ void Model::train(size_t epochs, double learning_rate) {
 
 #endif
     int j;
-    addLayer(train_labels.rows(), activation::sigmoid);
+    addLayer(train_labels.rows(), activation::softmax);
     for (size_t i = 0; i < epochs; ++i) {
 
         // first forward prop
