@@ -54,14 +54,14 @@ void Model::train(size_t epochs, double learning_rate) {
     int when_calc_accuracy = 25;
     double accuracy = 0;
 #endif
-    int j;
+//    int j;
     addLayer(train_labels.rows(), activation::softmax);
     for (size_t i = 0; i < epochs; ++i) {
 
         // first forward prop
         layers[0].first_forward_prop(train_data);
-        for (j = 1; j < layers.size();) {
-            layers[j++].forward_prop();
+        for (int k = 1; k < layers.size();) {
+            layers[k++].forward_prop();
         }
 
 #ifdef LOGGING
@@ -72,13 +72,13 @@ void Model::train(size_t epochs, double learning_rate) {
         bar.set_option(indicators::option::PrefixText{"DeepDendro epoch: " + std::to_string(i + 1) + out_of_all});
         bar.tick();
         bar.set_option(indicators::option::PostfixText{
-                "Loss function: " + std::to_string(lossFunc().crossEntropy(layers.back().getAValues(), train_labels)) + ", Accuracy: " + std::to_string(accuracy) + "%"});
+                "Loss function: " + std::to_string(lossFunc().categoryCrossEntropy(layers.back().getAValues(), train_labels)) + ", Accuracy: " + std::to_string(accuracy) + "%"});
 #endif
 
         // first back_prop
         layers.back().first_back_prop(learning_rate, train_labels);
         // all other back props
-        for (j = layers.size() - 2; j > 0;) {
+        for (int j = layers.size() - 2; j > 0;) {
             layers[j--].back_prop(learning_rate);
         }
         layers[0].last_back_prop(learning_rate, train_data);

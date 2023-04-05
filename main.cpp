@@ -61,7 +61,7 @@ int main() {
 
     model.addLayer(16, activation::relu);
     model.addLayer(16, activation::relu);
-    model.train(10, 0.005);
+    model.train(1000, 0.005);
 
     return 0;
 }

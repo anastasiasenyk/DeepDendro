@@ -8,6 +8,7 @@
 class lossFunc {
 public:
     double crossEntropy(const MatrixXd& predict, const MatrixXd& Y);
+    double categoryCrossEntropy(const MatrixXd& predict, const MatrixXd& Y);
 };
 
 
