@@ -57,7 +57,6 @@ void Model::train(size_t epochs, double learning_rate) {
 //    int j;
     addLayer(train_labels.rows(), activation::softmax);
     for (size_t i = 0; i < epochs; ++i) {
-
         // first forward prop
         layers[0].first_forward_prop(train_data);
         for (int k = 1; k < layers.size();) {
@@ -87,16 +86,22 @@ void Model::train(size_t epochs, double learning_rate) {
 
 MatrixXd Model::predict_after_forward_prop() {
     MatrixXd predicted_values = layers.back().getAValues();
-
     Eigen::Index numCols = predicted_values.cols();
-
+    int maxRowIndex;
     for (Eigen::Index i=0; i<numCols; i++) {
-        int maxRowIndex;
         predicted_values.col(i).maxCoeff(&maxRowIndex);
         predicted_values.col(i).setZero();
         predicted_values(maxRowIndex, i) = 1;
     }
     return predicted_values;
+}
+
+MatrixXd Model::predict(const MatrixXd &testData) {
+    layers[0].first_forward_prop(testData);
+    for (int k = 1; k < layers.size();) {
+        layers[k++].forward_prop();
+    }
+    return predict_after_forward_prop();
 }
 
 double Model::calc_accuracy(const MatrixXd &predicted, const MatrixXd &true_labels) {

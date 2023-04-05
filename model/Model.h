@@ -32,7 +32,7 @@ public:
 
     MatrixXd predict_after_forward_prop();
 
-    MatrixXd predict(const MatrixXd &data);
+    MatrixXd predict(const MatrixXd &testData);
 
     void test();
 
