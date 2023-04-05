@@ -22,7 +22,7 @@ add_executable(DeepDendro
         regularization/data_normalization/dataProcessing.cpp
         regularization/dropout/dropout.cpp
 
-        main.cpp activation_funcs/activationDerivative.cpp activation_funcs/activationDerivative.h)
+        main.cpp activation_funcs/activationDerivative.cpp activation_funcs/activationDerivative.h regularization/data_normalization/MNISTProcess.cpp regularization/data_normalization/MNISTProcess.h)
 
 
 include_directories(.
