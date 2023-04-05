@@ -43,5 +43,4 @@ public:
     const MatrixXd &getAValues();
 };
 
-
 #endif //DEEPDENDRO_HIDDENLAYER_H

@@ -22,6 +22,8 @@ add_executable(DeepDendro
         regularization/data_normalization/dataProcessing.cpp
         regularization/dropout/dropout.cpp
 
+        parallelism/inter_model/inter_model.cpp
+
         main.cpp activation_funcs/activationDerivative.cpp activation_funcs/activationDerivative.h regularization/data_normalization/MNISTProcess.cpp regularization/data_normalization/MNISTProcess.h)
 
 
@@ -40,6 +42,7 @@ include_directories(.
         model/to_predict
         regularization/data_normalization
         regularization/dropout
+        parallelism/inter_model
         )
 
 
