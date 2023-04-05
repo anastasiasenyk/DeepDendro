@@ -90,7 +90,6 @@ MatrixXd Model::predict_after_forward_prop() {
         predicted_values.col(i).maxCoeff(&maxRowIndex);
         predicted_values.col(i).setZero();
         predicted_values(maxRowIndex, i) = 1;
-//        std::cout << predicted_values.col(i) << "\n" << maxRowIndex << "\n" << std::endl;
     }
     return predicted_values;
 }
