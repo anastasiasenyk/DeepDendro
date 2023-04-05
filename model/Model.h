@@ -37,6 +37,12 @@ public:
     void test();
 
     void create_mini_batches();
+
+    MatrixXd predict_after_forward_prop();
+
+    MatrixXd predict(const MatrixXd &data);
+
+    double calc_accuracy(const MatrixXd &predicted, const MatrixXd &true_labels);
 };
 
 

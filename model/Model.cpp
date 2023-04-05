@@ -29,6 +29,7 @@ void Model::addLayer(int neurons, activation activationType) {
     save_prev_layer = &layers.back();
 }
 
+
 void Model::train(size_t epochs, double learning_rate) {
 
 #ifdef LOGGING
@@ -92,4 +93,18 @@ MatrixXd Model::predict_after_forward_prop() {
 //        std::cout << predicted_values.col(i) << "\n" << maxRowIndex << "\n" << std::endl;
     }
     return predicted_values;
+}
+
+double Model::calc_accuracy(const MatrixXd &predicted, const MatrixXd &true_labels) {
+    double num_samples = predicted.cols();
+
+    MatrixXd diff = (predicted - true_labels).cwiseAbs2();
+    #ifdef DEBUG
+        std::cout << "diff: " << diff << std::endl;
+    #endif
+
+    VectorXd col_sums = diff.colwise().sum();
+    double num_identical_cols = (col_sums.array() == 0).count();
+
+    return num_identical_cols / num_samples;
 }

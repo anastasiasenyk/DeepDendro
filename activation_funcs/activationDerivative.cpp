@@ -24,8 +24,9 @@ MatrixXd TanhDer(const MatrixXd &input) {
 }
 
 MatrixXd SoftmaxDer(const MatrixXd &input) {
-    // TODO: implement
-    return input;
+    MatrixXd softmax = Softmax(input);
+    MatrixXd diag_softmax = softmax.array() * (1.0 - softmax.array());
+    return diag_softmax;
 }
 
 ActivationFuncDer find_activation_der(ActivationFunc activation_func) {
