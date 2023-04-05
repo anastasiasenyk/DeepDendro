@@ -13,6 +13,7 @@ Model::Model() {
 void Model::addInput(const MatrixXd &data) {
     train_data = data;
 }
+
 void Model::addOutput(const MatrixXd &labels) {
     train_labels = labels;
 }
@@ -46,7 +47,7 @@ void Model::train(size_t epochs, double learning_rate) {
             indicators::option::PostfixText{"Loss function: _"},
             indicators::option::ShowElapsedTime{true},
             indicators::option::ShowRemainingTime{true},
-            indicators::option::ForegroundColor{Color::red},
+            indicators::option::ForegroundColor{Color::magenta},
             indicators::option::FontStyles{std::vector<FontStyle>{FontStyle::bold}},
             indicators::option::MaxProgress{epochs}
     };
@@ -79,3 +80,21 @@ void Model::train(size_t epochs, double learning_rate) {
     }
 }
 
+
+MatrixXd Model::predict_after_forward_prop() {}
+
+MatrixXd Model::predict(const MatrixXd &data) {}
+
+double Model::calc_accuracy(const MatrixXd &predicted, const MatrixXd &true_labels) {
+    double num_samples = predicted.cols();
+
+    MatrixXd diff = (predicted - true_labels).cwiseAbs2();
+    #ifdef DEBUG
+        std::cout << "diff: " << diff << std::endl;
+    #endif
+
+    VectorXd col_sums = diff.colwise().sum();
+    double num_identical_cols = (col_sums.array() == 0).count();
+
+    return num_identical_cols / num_samples;
+}
