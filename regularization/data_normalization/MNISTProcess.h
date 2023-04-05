@@ -9,6 +9,7 @@
 #include <map>
 #include "dataProcessing.h"
 #include "HiddenLayer.h"
+#include "DataSets.h"
 
 class MNISTProcess : public DataProcessing {
     int classesNum = 10;
@@ -24,7 +25,7 @@ public:
 
     VectorXd readLbl();
 
-    std::map<std::string, std::pair<MatrixXd, MatrixXd>> getData(std::string pathToMNIST);
+    DataSets getData(std::string pathToMNIST);
 
     ~MNISTProcess();
 };

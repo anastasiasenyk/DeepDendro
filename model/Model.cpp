@@ -104,13 +104,17 @@ MatrixXd Model::predict(const MatrixXd &testData) {
     return predict_after_forward_prop();
 }
 
-double Model::calc_accuracy(const MatrixXd &predicted, const MatrixXd &true_labels) {
+double Model::calc_accuracy(const MatrixXd &predicted, const MatrixXd &true_labels, bool verbose) {
     double num_samples = predicted.cols();
 
     MatrixXd diff = (predicted - true_labels).cwiseAbs2();
 
     VectorXd col_sums = diff.colwise().sum();
     double num_identical_cols = (col_sums.array() == 0).count();
+
+    if (verbose) {
+        std::cout << YELLOW << "Test accuracy: " << 100 * num_identical_cols / num_samples << "%" << RESET << std::endl;
+    }
 
     return num_identical_cols / num_samples;
 }

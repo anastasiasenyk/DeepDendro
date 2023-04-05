@@ -10,24 +10,16 @@ int main() {
     srand((unsigned int) time(0));
 
     MNISTProcess mnistProcessTrain = MNISTProcess();
-    std::map<std::string, std::pair<MatrixXd, MatrixXd>> data = mnistProcessTrain.getData("../MNIST_ORG");
-
-    MatrixXd trainImages = data["train"].first;
-    MatrixXd trainLabels = data["train"].second;
-
-    MatrixXd testImages = data["test"].first;
-    MatrixXd testLabels = data["test"].second;
+    DataSets data = mnistProcessTrain.getData("../MNIST_ORG");
 
     Model model;
-    model.addInput(trainImages);
-    model.addOutput(trainLabels);
+    model.addInput(data.trainData);
+    model.addOutput(data.trainLabels);
 
     model.addLayer(16, activation::relu);
     model.addLayer(16, activation::relu);
-    model.train(500, 0.05);
-
-    MatrixXd predicted = model.predict(testImages);
-    std::cout << model.calc_accuracy(predicted, testLabels) << std::endl;
+    model.train(100, 0.05);
+    model.calc_accuracy(model.predict(data.testData), data.testLabels, true);
 
     return 0;
 }

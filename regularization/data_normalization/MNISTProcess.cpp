@@ -47,39 +47,37 @@ VectorXd MNISTProcess::readLbl() {
     return oneHot;
 }
 
-std::map<std::string, std::pair<MatrixXd, MatrixXd>> MNISTProcess::getData(std::string pathToMNIST) {
+DataSets MNISTProcess::getData(std::string pathToMNIST) {
     int numTrainImg = 60000;
     int numTestImg = 10000;
+    DataSets data = DataSets();
 
     MNISTProcess mnistProcessTrain = MNISTProcess();
     mnistProcessTrain.skipHeaders(pathToMNIST + "/train-images.idx3-ubyte", pathToMNIST + "/train-labels.idx1-ubyte", 16, 8);
     MNISTProcess mnistProcessTest = MNISTProcess();
     mnistProcessTest.skipHeaders(pathToMNIST + "/t10k-images.idx3-ubyte", pathToMNIST + "/t10k-labels.idx1-ubyte", 16, 8);
 
-    MatrixXd trainImages(784, numTrainImg);
-    MatrixXd trainLabels(10, numTrainImg);
-    MatrixXd testImages(784, numTestImg);
-    MatrixXd testLabels(10, numTestImg);
+    data.trainData = MatrixXd (784, numTrainImg);
+    data.trainLabels = MatrixXd (10, numTrainImg);
+    data.testData = MatrixXd (784, numTestImg);
+    data.testLabels = MatrixXd (10, numTestImg);
 
 
     for (int sample = 0; sample < numTrainImg; ++sample) {
         VectorXd oneHotLabel = mnistProcessTrain.readLbl();
         VectorXd flattenedImage = mnistProcessTrain.readImg(28, 28);
-        trainImages.col(sample) = flattenedImage;
-        trainLabels.col(sample) = oneHotLabel;
+        data.trainData.col(sample) = flattenedImage;
+        data.trainLabels.col(sample) = oneHotLabel;
     }
 
     for (int sample = 0; sample < numTestImg; ++sample) {
         VectorXd oneHotLabel = mnistProcessTest.readLbl();
         VectorXd flattenedImage = mnistProcessTest.readImg(28, 28);
-        testImages.col(sample) = flattenedImage;
-        testLabels.col(sample) = oneHotLabel;
+        data.testData.col(sample) = flattenedImage;
+        data.testLabels.col(sample) = oneHotLabel;
     }
-    return {{"train", {trainImages, trainLabels}},
-            {"test", {testImages, testLabels}}};
+    return data;
 }
-
-
 
 MNISTProcess::~MNISTProcess() {
     image.close();

@@ -4,7 +4,10 @@
 
 #ifndef DEEPDENDRO_MODEL_H
 #define DEEPDENDRO_MODEL_H
+#define YELLOW  "\033[33m"
+#define RESET   "\033[0m"
 
+#include <iostream>
 #include "Layers.h"
 #include "vector"
 #include "activationFuncs.h"
@@ -38,7 +41,7 @@ public:
 
     void create_mini_batches();
 
-    double calc_accuracy(const MatrixXd &predicted, const MatrixXd &true_labels);
+    double calc_accuracy(const MatrixXd &predicted, const MatrixXd &true_labels, bool verbose=false);
 };
 
 
