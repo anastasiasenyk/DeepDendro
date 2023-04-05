@@ -13,6 +13,7 @@ Model::Model() {
 void Model::addInput(const MatrixXd &data) {
     train_data = data;
 }
+
 void Model::addOutput(const MatrixXd &labels) {
     train_labels = labels;
 }
@@ -27,7 +28,6 @@ void Model::addLayer(int neurons, activation activationType) {
     layers.emplace_back(neurons, prev_shape, find_activation_func(activationType));
     save_prev_layer = &layers.back();
 }
-
 
 void Model::train(size_t epochs, double learning_rate) {
 
@@ -79,3 +79,17 @@ void Model::train(size_t epochs, double learning_rate) {
     }
 }
 
+MatrixXd Model::predict_after_forward_prop() {
+    MatrixXd predicted_values = layers.back().getAValues();
+
+    Eigen::Index numCols = predicted_values.cols();
+
+    for (Eigen::Index i=0; i<numCols; i++) {
+        int maxRowIndex;
+        predicted_values.col(i).maxCoeff(&maxRowIndex);
+        predicted_values.col(i).setZero();
+        predicted_values(maxRowIndex, i) = 1;
+//        std::cout << predicted_values.col(i) << "\n" << maxRowIndex << "\n" << std::endl;
+    }
+    return predicted_values;
+}

@@ -28,8 +28,11 @@ public:
     // by default, we have a straight-forward model (no branching)
     void addLayer(int neurons, activation activationType);
 
-
     void train(size_t epochs = 10, double learning_rate = 0.005);
+
+    MatrixXd predict_after_forward_prop();
+
+    MatrixXd predict(const MatrixXd &data);
 
     void test();
 
