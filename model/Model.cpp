@@ -51,7 +51,8 @@ void Model::train(size_t epochs, double learning_rate) {
             indicators::option::FontStyles{std::vector<FontStyle>{FontStyle::bold}},
             indicators::option::MaxProgress{epochs}
     };
-
+    int when_calc_accuracy = 25;
+    double accuracy = 0;
 #endif
     int j;
     addLayer(train_labels.rows(), activation::softmax);
@@ -64,10 +65,14 @@ void Model::train(size_t epochs, double learning_rate) {
         }
 
 #ifdef LOGGING
+        if (i % when_calc_accuracy == 0) {
+            accuracy = calc_accuracy(predict_after_forward_prop(), train_labels) * 100;
+        }
+
         bar.set_option(indicators::option::PrefixText{"DeepDendro epoch: " + std::to_string(i + 1) + out_of_all});
         bar.tick();
         bar.set_option(indicators::option::PostfixText{
-                "Loss function: " + std::to_string(lossFunc().crossEntropy(layers.back().getAValues(), train_labels))});
+                "Loss function: " + std::to_string(lossFunc().crossEntropy(layers.back().getAValues(), train_labels)) + ", Accuracy: " + std::to_string(accuracy) + "%"});
 #endif
 
         // first back_prop
@@ -98,9 +103,7 @@ double Model::calc_accuracy(const MatrixXd &predicted, const MatrixXd &true_labe
     double num_samples = predicted.cols();
 
     MatrixXd diff = (predicted - true_labels).cwiseAbs2();
-    #ifdef DEBUG
-        std::cout << "diff: " << diff << std::endl;
-    #endif
+
 
     VectorXd col_sums = diff.colwise().sum();
     double num_identical_cols = (col_sums.array() == 0).count();
