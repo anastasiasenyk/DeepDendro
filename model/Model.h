@@ -19,7 +19,6 @@ class Model {
     std::vector<HiddenLayer> layers;
     MatrixXd train_data;
     MatrixXd train_labels;
-    std::shared_ptr<HiddenLayer> save_prev_layer;
 
     MatrixXd predict_after_forward_prop();
     void create_mini_batches();
