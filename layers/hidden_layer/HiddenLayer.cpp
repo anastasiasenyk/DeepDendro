@@ -5,9 +5,9 @@
 #include "HiddenLayer.h"
 
 HiddenLayer::HiddenLayer(const int curr_neurons, Shape input_shape, ActivationFunc activation) :
-        prev_layer{nullptr},
         biases{VectorXd::Zero(curr_neurons)},
         activ_func{activation} {
+    prev_layer = nullptr;
     weights = MatrixXd::Random(curr_neurons, input_shape.first);
     a_values = MatrixXd::Zero(curr_neurons, input_shape.second);
     weights /= sqrt(input_shape.first);
@@ -16,10 +16,11 @@ HiddenLayer::HiddenLayer(const int curr_neurons, Shape input_shape, ActivationFu
 }
 
 
-HiddenLayer::HiddenLayer(const int curr_neurons, HiddenLayer *ancestor, ActivationFunc activation) :
-        prev_layer{ancestor},
+HiddenLayer::HiddenLayer(const int curr_neurons, const std::shared_ptr<HiddenLayer> ancestor, ActivationFunc activation) :
+
         biases{VectorXd::Zero(curr_neurons)},
         activ_func{activation} {
+    prev_layer = ancestor;
     weights = MatrixXd::Random(curr_neurons, prev_layer->shape.first);
     a_values = MatrixXd::Zero(curr_neurons, prev_layer->shape.second);
     weights /= sqrt(ancestor->shape.first);

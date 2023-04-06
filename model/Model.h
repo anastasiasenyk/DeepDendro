@@ -19,7 +19,10 @@ class Model {
     std::vector<HiddenLayer> layers;
     MatrixXd train_data;
     MatrixXd train_labels;
-    HiddenLayer *save_prev_layer;
+    std::shared_ptr<HiddenLayer> save_prev_layer;
+
+    MatrixXd predict_after_forward_prop();
+    void create_mini_batches();
 
 public:
     Model();
@@ -33,15 +36,10 @@ public:
 
     void train(size_t epochs = 10, double learning_rate = 0.005);
 
-    MatrixXd predict_after_forward_prop();
-
     MatrixXd predict(const MatrixXd &testData);
+    double calc_accuracy(const MatrixXd &predicted, const MatrixXd &true_labels, bool verbose = false);
 
     void test();
-
-    void create_mini_batches();
-
-    double calc_accuracy(const MatrixXd &predicted, const MatrixXd &true_labels, bool verbose=false);
 };
 
 

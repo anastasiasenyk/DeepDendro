@@ -21,12 +21,13 @@ void Model::addOutput(const MatrixXd &labels) {
 void Model::addLayer(int neurons, activation activationType) {
     if (save_prev_layer != nullptr) {
         layers.emplace_back(neurons, save_prev_layer, find_activation_func(activationType));
-        save_prev_layer = &layers.back();
+        save_prev_layer.reset(&layers.back());
         return;
     }
+
     Shape prev_shape = {train_data.rows(), train_data.cols()};
     layers.emplace_back(neurons, prev_shape, find_activation_func(activationType));
-    save_prev_layer = &layers.back();
+    save_prev_layer.reset(&layers.back());
 }
 
 
@@ -42,7 +43,6 @@ void Model::train(size_t epochs, double learning_rate) {
             indicators::option::Lead{"■"},
             indicators::option::Remainder{"-"},
             indicators::option::End{" ]"},
-
             indicators::option::PrefixText{"DeepDendro Epoch: _ "},
             indicators::option::PostfixText{"Loss function: _"},
             indicators::option::ShowElapsedTime{true},
@@ -51,7 +51,7 @@ void Model::train(size_t epochs, double learning_rate) {
             indicators::option::FontStyles{std::vector<FontStyle>{FontStyle::bold}},
             indicators::option::MaxProgress{epochs}
     };
-    int when_calc_accuracy = 25;
+    int when_calc_accuracy = 2;
     double accuracy = 0;
 #endif
 //    int j;
@@ -71,7 +71,9 @@ void Model::train(size_t epochs, double learning_rate) {
         bar.set_option(indicators::option::PrefixText{"DeepDendro epoch: " + std::to_string(i + 1) + out_of_all});
         bar.tick();
         bar.set_option(indicators::option::PostfixText{
-                "Loss function: " + std::to_string(lossFunc().categoryCrossEntropy(layers.back().getAValues(), train_labels)) + ", Accuracy: " + std::to_string(accuracy) + "%"});
+                "Loss function: " +
+                std::to_string(lossFunc().categoryCrossEntropy(layers.back().getAValues(), train_labels)) +
+                ", Accuracy: " + std::to_string(accuracy) + "%"});
 #endif
 
         // first back_prop
@@ -85,10 +87,11 @@ void Model::train(size_t epochs, double learning_rate) {
 }
 
 MatrixXd Model::predict_after_forward_prop() {
+    // TODO: Use vectorization
     MatrixXd predicted_values = layers.back().getAValues();
     Eigen::Index numCols = predicted_values.cols();
     int maxRowIndex;
-    for (Eigen::Index i=0; i<numCols; i++) {
+    for (Eigen::Index i = 0; i < numCols; i++) {
         predicted_values.col(i).maxCoeff(&maxRowIndex);
         predicted_values.col(i).setZero();
         predicted_values(maxRowIndex, i) = 1;

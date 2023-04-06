@@ -21,14 +21,14 @@ class HiddenLayer : public Layer {
 
     MatrixXd weight_delta_next_layer;
     // TODO: rewrite so this pointer will be shared
-    HiddenLayer *prev_layer;
+    std::shared_ptr<HiddenLayer> prev_layer;
 
 public:
     // for first layer
     HiddenLayer(int curr_neurons, Shape prev_shape, ActivationFunc activation);
 
     // for further layers
-    HiddenLayer(int curr_neurons, HiddenLayer *ancestor, ActivationFunc activation);
+    HiddenLayer(int curr_neurons, std::shared_ptr<HiddenLayer> ancestor, ActivationFunc activation);
 
 
     void first_forward_prop(const MatrixXd &input);
