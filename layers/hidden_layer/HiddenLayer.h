@@ -20,6 +20,7 @@ class HiddenLayer : public Layer {
     ActivationFunc activ_func;
 
     MatrixXd weight_delta_next_layer;
+    // TODO: rewrite so this pointer will be shared
     HiddenLayer *prev_layer;
 
 public:
