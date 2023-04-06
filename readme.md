@@ -15,4 +15,11 @@
 
 ### Props
 - ```indicators``` [library](https://github.com/p-ranav/indicators)
-- 
+
+
+## Usage example
+
+![carbon](https://user-images.githubusercontent.com/92575094/230293711-dcc58672-6d19-46ef-8f40-2992b89e742e.png)
+
+
+![itsgift](https://user-images.githubusercontent.com/92575094/230293555-980fba42-5c51-461b-8496-6e851bdb3aa2.gif)
