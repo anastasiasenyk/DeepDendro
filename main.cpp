@@ -18,13 +18,9 @@ int main() {
     model.addOutput(data.trainLabels);
 
     model.addLayer(16, activation::relu);
-    model.addLayer(16, activation::relu);
-//    model.train(100, 0.05);
-//    model.calc_accuracy(model.predict(data.testData), data.testLabels, true);
+    model.addLayer(8, activation::relu);
 
-    InterModel models = InterModel();
-    models.addModel(model, 100, 0.05);
-    models.runThreads(2);
-
+    model.train(100, 0.05);
+    model.calc_accuracy(model.predict(data.testData), data.testLabels, true);
     return 0;
 }
