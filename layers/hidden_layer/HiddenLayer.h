@@ -15,33 +15,25 @@ class HiddenLayer : public Layer {
     VectorXd biases;
     MatrixXd z_values;
     MatrixXd a_values;
-
+    MatrixXd delta;
 
     ActivationFunc activ_func;
-
-    MatrixXd weight_delta_next_layer;
-    HiddenLayer *prev_layer;
 
 public:
     // for first layer
     HiddenLayer(int curr_neurons, Shape prev_shape, ActivationFunc activation);
 
-    // for further layers
-    HiddenLayer(int curr_neurons, HiddenLayer *ancestor, ActivationFunc activation);
+    void forward_prop(const MatrixXd &prev_a_values);
 
+    MatrixXd calc_gradient();
 
-    void first_forward_prop(const MatrixXd &input);
+    MatrixXd calc_first_back_prop(const MatrixXd &labels);
 
-    void forward_prop();
+    MatrixXd calc_back_prop(const MatrixXd &gradient);
 
-    void first_back_prop(double learning_rate, const MatrixXd &labels);
-
-    void back_prop(double learning_rate);
-
-    void last_back_prop(double learning_rate, const MatrixXd &a_values);
+    void apply_back_prop(double learning_rate, const MatrixXd &prev_a_values);
 
     const MatrixXd &getAValues();
 };
-
 
 #endif //DEEPDENDRO_HIDDENLAYER_H

@@ -7,7 +7,7 @@
 
 #endif //DEEPDENDRO_DATASETS_H
 
-#include "Layer.h";
+#include "Layer.h"
 
 struct DataSets {
     MatrixXd testData;
