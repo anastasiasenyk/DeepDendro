@@ -6,6 +6,11 @@ set(CMAKE_CXX_STANDARD 20)
 include_directories(.)
 include_directories(/usr/local/include/eigen3)
 
+#set(CMAKE_PREFIX_PATH "/opt/local")
+
+find_package(TBB REQUIRED)
+include_directories(${TBB_INCLUDE_DIRS})
+include_directories(/opt/homebrew/include)
 
 
 add_executable(DeepDendro
@@ -25,6 +30,8 @@ add_executable(DeepDendro
         parallelism/inter_model/inter_model.cpp
 
         main.cpp activation_funcs/activationDerivative.cpp activation_funcs/activationDerivative.h regularization/data_normalization/MNISTProcess.cpp regularization/data_normalization/MNISTProcess.h)
+
+target_link_libraries(DeepDendro PRIVATE TBB::tbb)
 
 
 include_directories(.
@@ -56,3 +63,4 @@ option(LOGGING "Enable debug output" ON)
 if (LOGGING)
     add_compile_definitions(LOGGING)
 endif()
+

@@ -5,6 +5,7 @@
 #include "Layers.h"
 #include "MNISTProcess.h"
 
+
 void MNISTProcess::skipHeaders(const std::string &imageFilename, const std::string &labelFilename,
                                int skipBytesImg, int skipBytesLab) {
     image.open(imageFilename.c_str(), std::ios::in | std::ios::binary);
@@ -47,9 +48,38 @@ VectorXd MNISTProcess::readLbl() {
     return oneHot;
 }
 
-DataSets MNISTProcess::getData(std::string pathToMNIST) {
-    int numTrainImg = 60000;
-    int numTestImg = 10000;
+void MNISTProcess::enqueueMiniBatches(int batchSize, tbb::concurrent_queue<std::pair<MatrixXd, MatrixXd>> &queue, std::string& pathToMNIST) {
+
+    skipHeaders(pathToMNIST + "/train-images.idx3-ubyte", pathToMNIST + "/train-labels.idx1-ubyte", 16, 8);
+
+    for (int sample = 0; sample < numTrainImg; sample += batchSize) {
+        MatrixXd batchData(784, std::min(batchSize, numTrainImg - sample));
+        MatrixXd batchLabels(10, std::min(batchSize, numTrainImg - sample));
+
+        // Read the images and labels for this batch
+        for (int i = 0; i < std::min(batchSize, numTrainImg - sample); ++i) {
+            VectorXd oneHotLabel = readLbl();
+            VectorXd flattenedImage = readImg(28, 28);
+//            for (int j = 0; j < 28; ++j) {
+//                for (int k = 0; k < 28; ++k) {
+//                    std::cout << flattenedImage(k*28+j);
+//                }
+//                std::cout << "\n";
+//            }
+            batchData.col(i) = flattenedImage;
+            batchLabels.col(i) = oneHotLabel;
+//            for (auto el: oneHotLabel) {
+//                std::cout << el <<" ";
+//            }
+        }
+
+        // Enqueue the mini-batch
+        queue.push(std::make_pair(batchData, batchLabels));
+    }
+}
+
+DataSets MNISTProcess::getData(std::string& pathToMNIST) {
+
     DataSets data = DataSets();
 
     MNISTProcess mnistProcessTrain = MNISTProcess();

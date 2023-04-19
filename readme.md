@@ -10,6 +10,8 @@
   
 
 - C++ 20
+- Intel oneTBB
+  - If you're using macOS, you can install it simply running the following in your commandline <br> ```sudo install tbb```
 
 
 

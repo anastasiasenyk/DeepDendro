@@ -8,19 +8,23 @@
 
 
 int main() {
-    srand((unsigned int) time(0));
-
+//    srand((unsigned int) time(0));
+    std::string pathToMNIST = "../MNIST_ORG";
     MNISTProcess mnistProcessTrain = MNISTProcess();
-    DataSets data = mnistProcessTrain.getData("../MNIST_ORG");
+//
+//    DataSets data = mnistProcessTrain.getData(pathToMNIST);
 
-    Model model;
-    model.addInput(data.trainData);
-    model.addOutput(data.trainLabels);
+    tbb::concurrent_queue<std::pair<MatrixXd, MatrixXd>> mainQ;
+    mnistProcessTrain.enqueueMiniBatches(64, mainQ, pathToMNIST);
 
-    model.addLayer(16, activation::relu);
-    model.addLayer(8, activation::relu);
-
-    model.train(100, 0.05);
-    model.calc_accuracy(model.predict(data.testData), data.testLabels, true);
+//    Model model;
+//    model.addInput(data.trainData);
+//    model.addOutput(data.trainLabels);
+//
+//    model.addLayer(16, activation::relu);
+//    model.addLayer(8, activation::relu);
+//
+//    model.train(100, 0.05);
+//    model.calc_accuracy(model.predict(data.testData), data.testLabels, true);
     return 0;
 }
