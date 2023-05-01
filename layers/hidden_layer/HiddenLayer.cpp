@@ -46,3 +46,15 @@ void HiddenLayer::apply_back_prop(double learning_rate, const MatrixXd &prev_a_v
 const MatrixXd &HiddenLayer::getAValues() {
     return a_values;
 }
+
+const MatrixXd &HiddenLayer::getZValues() {
+    return z_values;
+}
+
+void HiddenLayer::setZValues(const MatrixXd &zValues) {
+    z_values = zValues;
+}
+
+void HiddenLayer::setAValues(const MatrixXd &aValues) {
+    a_values = aValues;
+}

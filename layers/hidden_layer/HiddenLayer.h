@@ -34,6 +34,13 @@ public:
     void apply_back_prop(double learning_rate, const MatrixXd &prev_a_values);
 
     const MatrixXd &getAValues();
+
+    const MatrixXd &getZValues();
+
+    void setAValues(const MatrixXd &aValues);
+
+    void setZValues(const MatrixXd &zValues);
+
 };
 
 #endif //DEEPDENDRO_HIDDENLAYER_H
