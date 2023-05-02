@@ -5,8 +5,25 @@ set(CMAKE_CXX_STANDARD 20)
 
 include_directories(.)
 include_directories(/usr/local/include/eigen3)
+#include_directories(/opt/homebrew/Cellar/tbb/2021.9.0/include)
+#
+#set(TBB_DIR /opt/homebrew/Cellar/tbb/2021.9.0/lib/cmake/TBB/)
+#find_package(TBB REQUIRED)
+
+# Set the path to the TBB include directory
+set(TBB_INCLUDE_DIRS "/opt/homebrew/include")
+
+# Set the path to the TBB library directory
+set(TBB_LIBRARY_DIRS "/opt/homebrew/lib")
+
+# Find the TBB library
+find_library(TBB_LIBRARIES tbb HINTS ${TBB_LIBRARY_DIRS})
+
+# Add the TBB include directory to the include path
+include_directories(${TBB_INCLUDE_DIRS})
 
 #set(CMAKE_PREFIX_PATH "/opt/local")
+set(TBB_ROOT /opt/homebrew/Cellar/tbb/2021.9.0)
 
 find_package(TBB REQUIRED)
 include_directories(${TBB_INCLUDE_DIRS})
@@ -29,9 +46,14 @@ add_executable(DeepDendro
 
         parallelism/inter_model/inter_model.cpp
 
-        main.cpp activation_funcs/activationDerivative.cpp activation_funcs/activationDerivative.h regularization/data_normalization/MNISTProcess.cpp regularization/data_normalization/MNISTProcess.h)
+        main.cpp activation_funcs/activationDerivative.cpp activation_funcs/activationDerivative.h regularization/data_normalization/MNISTProcess.cpp regularization/data_normalization/MNISTProcess.h Worker/Worker.cpp Worker/Worker.h)
 
-target_link_libraries(DeepDendro PRIVATE TBB::tbb)
+#target_link_libraries(DeepDendro PRIVATE TBB::tbb)
+
+# Link against the TBB library
+#target_link_libraries(DeepDendro ${TBB_LIBRARIES})
+target_include_directories(DeepDendro PRIVATE ${TBB_INCLUDE_DIRS})
+target_link_libraries(DeepDendro PRIVATE ${TBB_LIBRARIES})
 
 
 include_directories(.
