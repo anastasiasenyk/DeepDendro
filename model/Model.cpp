@@ -18,14 +18,14 @@ void Model::addOutput(const MatrixXd &labels) {
 }
 
 void Model::addLayer(int neurons, activation activationType) {
-    Shape prev_shape;
+    MShape prev_shape;
     if (layers.empty()) {
         prev_shape = {train_data.rows(), train_data.cols()};
     } else {
         prev_shape = layers.back().shape;
     }
 
-    layers.emplace_back(neurons, prev_shape, find_activation_func(activationType));
+    layers.emplace_back(neurons, prev_shape, activationType);
 }
 
 

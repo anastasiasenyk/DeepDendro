@@ -5,26 +5,26 @@ set(CMAKE_CXX_STANDARD 20)
 
 include_directories(.)
 include_directories(/usr/local/include/eigen3)
-
+include_directories(/usr/local/include/)
 
 
 add_executable(DeepDendro
-        activation_funcs/activationFuncs.cpp
         evaluation_metrics/accuracy.cpp
         layers/hidden_layer/HiddenLayer.cpp
+        layers/conv_layer/ConvLayer.cpp
+        layers/conv_layer/Filter.cpp
         loss_functions/lossFunc.cpp
 
         model/Model.cpp
         model_management/recreate_model/recreate_model.cpp
         model_management/save_model_state/save_model.cpp
-        model/to_predict/predict.cpp
 
         regularization/data_normalization/dataProcessing.cpp
         regularization/dropout/dropout.cpp
 
         parallelism/inter_model/inter_model.cpp
 
-        main.cpp activation_funcs/activationDerivative.cpp activation_funcs/activationDerivative.h regularization/data_normalization/MNISTProcess.cpp regularization/data_normalization/MNISTProcess.h)
+        main.cpp activation_funcs/activationDerivative.h regularization/data_normalization/MNISTProcess.cpp regularization/data_normalization/MNISTProcess.h)
 
 
 include_directories(.
@@ -33,13 +33,13 @@ include_directories(.
         layers
         layers/parent_layer
         layers/hidden_layer
+        layers/conv_layer
         logging
 
         loss_functions
         model
         model_management/recreate_model
         model_management/save_model_state
-        model/to_predict
         regularization/data_normalization
         regularization/dropout
         parallelism/inter_model
@@ -47,7 +47,7 @@ include_directories(.
 
 
 
-option(DEBUG "Enable debug output" OFF)
+option(DEBUG "Enable debug output" ON)
 if (DEBUG)
     add_compile_definitions(DEBUG)
 endif()

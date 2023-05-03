@@ -4,13 +4,15 @@
 
 #include "HiddenLayer.h"
 
-HiddenLayer::HiddenLayer(const int curr_neurons, Shape input_shape, ActivationFunc activation) :
+HiddenLayer::HiddenLayer(const int curr_neurons, MShape input_shape, activation type) :
         biases{VectorXd::Zero(curr_neurons)},
-        activ_func{activation},
         weights{MatrixXd::Random(curr_neurons, input_shape.first)},
-        a_values{MatrixXd::Zero(curr_neurons, input_shape.second)}
-        {
-    weights /= sqrt(input_shape.first);
+        a_values{MatrixXd::Zero(curr_neurons, input_shape.second)} {
+
+    auto [activFunc, activDer] = find_activation_func_DENSE(type);
+    activ_func = activFunc; activ_func_derivative = activDer;
+
+    weights *= sqrt(2 / static_cast<double>(input_shape.first));
     shape.first = curr_neurons;
     shape.second = input_shape.second;
 }
@@ -22,17 +24,17 @@ void HiddenLayer::forward_prop(const MatrixXd &prev_a_values) {
     a_values = activ_func(z_values);
 }
 
-inline MatrixXd HiddenLayer::calc_gradient(){
+inline MatrixXd HiddenLayer::calc_gradient() {
     return weights.transpose() * delta;
 }
 
 MatrixXd HiddenLayer::calc_first_back_prop(const MatrixXd &labels) {
     delta = a_values - labels;
-    return calc_gradient();  // <-- gradient
+    return calc_gradient();
 }
 
 MatrixXd HiddenLayer::calc_back_prop(const MatrixXd &gradient) {
-    MatrixXd relu_derivative = find_activation_der(activ_func)(z_values);
+    MatrixXd relu_derivative = activ_func_derivative(z_values);
     delta = gradient.cwiseProduct(relu_derivative);
     return calc_gradient();
 }
