@@ -5,116 +5,115 @@
 #include "Model.h"
 
 
-Model::Model() {
-    layers.reserve(10);
-    save_prev_layer = nullptr;
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+
+Model::Model() : inputs(), outputs() {}
+
+void Model::reset_input_output() {
+    inputs.clear();
+    outputs.clear();
 }
 
-void Model::addInput(const MatrixXd &data) {
-    train_data = data;
+void Model::save(LayerPtr &in_layer, LayerPtr &out_layer) {
+    reset_input_output();
+    inputs.push_back(in_layer);
+    outputs.push_back(out_layer);
 }
 
-void Model::addOutput(const MatrixXd &labels) {
-    train_labels = labels;
+void Model::save(LayerPtr &in_layer, std::vector<LayerPtr> &&out_layers) {
+    reset_input_output();
+    inputs.push_back(in_layer);
+    outputs.insert(outputs.end(), out_layers.begin(), out_layers.end());
 }
 
-void Model::addLayer(int neurons, activation activationType) {
-    if (save_prev_layer != nullptr) {
-        layers.emplace_back(neurons, save_prev_layer, find_activation_func(activationType));
-        save_prev_layer = &layers.back();
-        return;
-    }
-    Shape prev_shape = {train_data.rows(), train_data.cols()};
-    layers.emplace_back(neurons, prev_shape, find_activation_func(activationType));
-    save_prev_layer = &layers.back();
+void Model::save(std::vector<LayerPtr> &in_layers, LayerPtr &out_layer) {
+    reset_input_output();
+    inputs.insert(inputs.end(), in_layers.begin(), in_layers.end());
+    outputs.push_back(out_layer);
 }
 
+void Model::save(std::vector<LayerPtr> &in_layers, std::vector<LayerPtr> &out_layers) {
+    reset_input_output();
+    inputs.insert(inputs.end(), in_layers.begin(), in_layers.end());
+    outputs.insert(outputs.end(), out_layers.begin(), out_layers.end());
+}
 
-void Model::train(size_t epochs, double learning_rate) {
+std::vector<LayerPtr> Model::toposort() {
+    std::unordered_map<LayerPtr, size_t> in_degree;
+    std::vector<LayerPtr> layers = get_all_layers();
 
-#ifdef LOGGING
-    show_console_cursor(false);
-    const std::string out_of_all = " / " + std::to_string(epochs) + " ";
-    ProgressBar bar{
-            indicators::option::BarWidth{50},
-            indicators::option::Start{"["},
-            indicators::option::Fill{"■"},
-            indicators::option::Lead{"■"},
-            indicators::option::Remainder{"-"},
-            indicators::option::End{" ]"},
+    for (const auto& layer : layers) in_degree[layer] = layer->get_parents().size();
 
-            indicators::option::PrefixText{"DeepDendro Epoch: _ "},
-            indicators::option::PostfixText{"Loss function: _"},
-            indicators::option::ShowElapsedTime{true},
-            indicators::option::ShowRemainingTime{true},
-            indicators::option::ForegroundColor{Color::blue},
-            indicators::option::FontStyles{std::vector<FontStyle>{FontStyle::bold}},
-            indicators::option::MaxProgress{epochs}
-    };
-    int when_calc_accuracy = 25;
-    double accuracy = 0;
-#endif
-//    int j;
-    addLayer(train_labels.rows(), activation::softmax);
-    for (size_t i = 0; i < epochs; ++i) {
-        // first forward prop
-        layers[0].first_forward_prop(train_data);
-        for (int k = 1; k < layers.size();) {
-            layers[k++].forward_prop();
+    std::queue<LayerPtr> layer_queue;
+    // Add nodes with zero in-degree to the queue
+    for (const auto& layer : layers) {
+        if (in_degree[layer] == 0) {
+            layer_queue.push(layer);
         }
+    }
 
-#ifdef LOGGING
-        if (i % when_calc_accuracy == 0) {
-            accuracy = calc_accuracy(predict_after_forward_prop(), train_labels) * 100;
+    // Process nodes in the queue and update in-degree of their children
+    std::vector<LayerPtr> sorted_layers;
+
+    while (!layer_queue.empty()) {
+        const auto current_layer = layer_queue.front();
+        layer_queue.pop();
+        sorted_layers.push_back(current_layer);
+        std::vector<std::shared_ptr<Layer>> childs = current_layer->get_children();
+        for (const auto& child : childs) {
+            in_degree[child]--;
+            if (in_degree[child] == 0) {
+                layer_queue.push(child);
+            }
         }
+    }
 
-        bar.set_option(indicators::option::PrefixText{"DeepDendro epoch: " + std::to_string(i + 1) + out_of_all});
-        bar.tick();
-        bar.set_option(indicators::option::PostfixText{
-                "Loss function: " + std::to_string(lossFunc().categoryCrossEntropy(layers.back().getAValues(), train_labels)) + ", Accuracy: " + std::to_string(accuracy) + "%"});
-#endif
+    if (sorted_layers.size() != layers.size()) {
+        throw std::runtime_error("Graph contains a cycle");
+    }
 
-        // first back_prop
-        layers.back().first_back_prop(learning_rate, train_labels);
-        // all other back props
-        for (int j = layers.size() - 2; j > 0;) {
-            layers[j--].back_prop(learning_rate);
+    return sorted_layers;
+}
+
+std::vector<LayerPtr> Model::get_all_layers() {
+    std::vector<LayerPtr> result;
+    std::unordered_set<LayerPtr> visited;
+    std::queue<LayerPtr> q;
+
+    // add input layers to queue
+    for (const auto& input : inputs) {
+        q.push(input);
+        visited.insert(input);
+    }
+
+    // BFS
+    while (!q.empty()) {
+        auto layer = q.front();
+        q.pop();
+        result.push_back(layer);
+        for (const auto& child : layer->get_children()) {
+            if (!visited.count(child)) {
+                q.push(child);
+                visited.insert(child);
+            }
         }
-        layers[0].last_back_prop(learning_rate, train_data);
     }
+    return result;
 }
 
-MatrixXd Model::predict_after_forward_prop() {
-    MatrixXd predicted_values = layers.back().getAValues();
-    Eigen::Index numCols = predicted_values.cols();
-    int maxRowIndex;
-    for (Eigen::Index i=0; i<numCols; i++) {
-        predicted_values.col(i).maxCoeff(&maxRowIndex);
-        predicted_values.col(i).setZero();
-        predicted_values(maxRowIndex, i) = 1;
-    }
-    return predicted_values;
+void Model::forward_prop() {
 }
 
-MatrixXd Model::predict(const MatrixXd &testData) {
-    layers[0].first_forward_prop(testData);
-    for (int k = 1; k < layers.size();) {
-        layers[k++].forward_prop();
-    }
-    return predict_after_forward_prop();
+void Model::back_prop() {
 }
 
-double Model::calc_accuracy(const MatrixXd &predicted, const MatrixXd &true_labels, bool verbose) {
-    double num_samples = predicted.cols();
+void Model::train() {
+    std::vector<LayerPtr> layers = toposort();
 
-    MatrixXd diff = (predicted - true_labels).cwiseAbs2();
-
-    VectorXd col_sums = diff.colwise().sum();
-    double num_identical_cols = (col_sums.array() == 0).count();
-
-    if (verbose) {
-        std::cout << YELLOW << "Test accuracy: " << 100 * num_identical_cols / num_samples << "%" << RESET << std::endl;
+    for (const LayerPtr& el: layers) {
+        el->print_structure_TEMP();
+        std::cout << std:: endl;
     }
-
-    return num_identical_cols / num_samples;
 }

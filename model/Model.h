@@ -4,44 +4,39 @@
 
 #ifndef DEEPDENDRO_MODEL_H
 #define DEEPDENDRO_MODEL_H
-#define YELLOW  "\033[33m"
-#define RESET   "\033[0m"
 
 #include <iostream>
+
 #include "Layers.h"
 #include "vector"
 #include "activationFuncs.h"
 #include "lossFunc.h"
 #include "logging.h"
 
+#include "Layer.h"
+
+using LayerPtr = std::shared_ptr<Layer>;
 
 class Model {
-    std::vector<HiddenLayer> layers;
-    MatrixXd train_data;
-    MatrixXd train_labels;
-    HiddenLayer *save_prev_layer;
+private:
+    std::vector<LayerPtr> inputs;
+    std::vector<LayerPtr> outputs;
 
+    void reset_input_output();
+    std::vector<LayerPtr> get_all_layers();
+    std::vector<LayerPtr> toposort();
 public:
     Model();
 
-    void addInput(const MatrixXd &data);
+    void save(LayerPtr &in_layer, LayerPtr &out_layer);
+    void save(LayerPtr &in_layer,std::vector<LayerPtr> &&out_layers);
+    void save(std::vector<LayerPtr> &in_layers, LayerPtr &out_layer);
+    void save(std::vector<LayerPtr> &in_layers, std::vector<LayerPtr> &out_layers);
 
-    void addOutput(const MatrixXd &labels);
+    void forward_prop(); // TODO
+    void back_prop(); // TODO
 
-    // by default, we have a straight-forward model (no branching)
-    void addLayer(int neurons, activation activationType);
-
-    void train(size_t epochs = 10, double learning_rate = 0.005);
-
-    MatrixXd predict_after_forward_prop();
-
-    MatrixXd predict(const MatrixXd &testData);
-
-    void test();
-
-    void create_mini_batches();
-
-    double calc_accuracy(const MatrixXd &predicted, const MatrixXd &true_labels, bool verbose=false);
+    void train();
 };
 
 

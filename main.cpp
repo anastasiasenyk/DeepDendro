@@ -2,29 +2,31 @@
 // Created by Yaroslav Korch on 30.03.2023.
 //
 
+#include <iostream>
+
+#include "Layer.h"
 #include "Model.h"
 #include "MNISTProcess.h"
-#include "inter_model.h"
 
 
 int main() {
-    srand((unsigned int) time(0));
+    typedef std::shared_ptr<Layer> shared_layer;
 
-    MNISTProcess mnistProcessTrain = MNISTProcess();
-    DataSets data = mnistProcessTrain.getData("../MNIST_ORG");
+    shared_layer first_layer = std::make_shared<Layer>(1, 1);
+    shared_layer second_layer = std::make_shared<Layer>(2, 2);
+    shared_layer third_layer = std::make_shared<Layer>(3, 3);
+    shared_layer output_1 = std::make_shared<Layer>(4, 4);
+    shared_layer output_2 = std::make_shared<Layer>(5, 5);
 
-    Model model;
-    model.addInput(data.trainData);
-    model.addOutput(data.trainLabels);
+    (*second_layer)(first_layer);
+    (*third_layer)(first_layer);
+    (*output_1)(third_layer);
+    (*output_2)(second_layer);
 
-    model.addLayer(16, activation::relu);
-    model.addLayer(16, activation::relu);
-//    model.train(100, 0.05);
-//    model.calc_accuracy(model.predict(data.testData), data.testLabels, true);
+    Model model = Model();
+    model.save(first_layer, {output_1, output_2});
 
-    InterModel models = InterModel();
-    models.addModel(model, 100, 0.05);
-    models.runThreads(2);
+    model.train();
 
     return 0;
 }
