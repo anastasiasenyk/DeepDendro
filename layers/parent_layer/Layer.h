@@ -22,6 +22,9 @@ private:
     std::vector<std::shared_ptr<Layer>> child_layers_;
 
 public:
+    MatrixXd a_values;
+    MatrixXd weight_delta_next_layer_;
+
     explicit Layer(long num_neurons) {
         shape.push_back(num_neurons);
     }
@@ -54,6 +57,11 @@ public:
     }
 
     virtual void parameters_init(){};
+    virtual void forward_prop(){};
+    void back_prop(double learning_rate){};
+    virtual MatrixXd getAValues() const {
+        return MatrixXd::Zero(0, 0);
+    };
 };
 
 

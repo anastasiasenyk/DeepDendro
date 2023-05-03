@@ -14,3 +14,7 @@ void InputLayer::parameters_init() {
         throw std::logic_error("An input layer must not have a parent.");
     }
 }
+
+MatrixXd InputLayer::getAValues() const {
+    return a_values;
+}

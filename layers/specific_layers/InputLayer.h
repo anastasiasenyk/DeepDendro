@@ -14,6 +14,9 @@ class InputLayer : public Layer {
 public:
     InputLayer(MatrixXd &data);
     void parameters_init();
+    void forward_prop(){};
+    void back_prop(double learning_rate){};
+    MatrixXd getAValues() const;
 };
 
 

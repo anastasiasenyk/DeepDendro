@@ -25,17 +25,11 @@ public:
 
     void parameters_init();
 
-//    void first_forward_prop(const MatrixXd &input);
-//
-//    void forward_prop();
-//
-//    void first_back_prop(double learning_rate, const MatrixXd &labels);
-//
-//    void back_prop(double learning_rate);
-//
-//    void last_back_prop(double learning_rate, const MatrixXd &a_values);
-//
-//    const MatrixXd &getAValues();
+    void forward_prop();
+
+    void back_prop(double learning_rate);
+
+    MatrixXd getAValues() const;
 };
 
 #endif //DEEPDENDRO_HIDDENLAYER_H

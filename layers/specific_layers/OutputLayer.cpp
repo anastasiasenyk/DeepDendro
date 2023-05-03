@@ -4,7 +4,7 @@
 
 #include "OutputLayer.h"
 
-OutputLayer::OutputLayer(MatrixXd train_labels, ActivationFunc activation) :
+OutputLayer::OutputLayer(const MatrixXd& train_labels, ActivationFunc activation) :
     activ_func(activation),
     Layer({train_labels.rows(), train_labels.cols()}){
 }
@@ -22,7 +22,28 @@ void OutputLayer::parameters_init() {
     }
 
     biases = VectorXd::Zero(static_cast<long>(num_neurons));
-    weights = MatrixXd::Random(num_neurons, parents[0]->get_shape().back()); // TODO: change second param for general (conv layer)
-    weights /= sqrt(parents[0]->get_shape().back());
-//    a_values = MatrixXd::Zero(num_neurons, input_size); // TODO: add init
+    weights = MatrixXd::Random(num_neurons, parents[0]->get_shape().front());
+    weights /= sqrt(parents[0]->get_shape().front());
+    a_values = MatrixXd::Zero(num_neurons, parents[0]->getAValues().cols());
+}
+
+void OutputLayer::forward_prop() {
+    z_values = weights * get_parents().front()->getAValues();
+    z_values.colwise() += biases;
+    a_values = activ_func(z_values);
+}
+
+void OutputLayer::back_prop(double learning_rate) {
+    MatrixXd delta = a_values - train_labels;
+
+    get_parents().front()->weight_delta_next_layer_ = weights.transpose() * delta;
+
+    auto m = static_cast<double> (delta.cols());
+
+    weights -= learning_rate * (1. / m) * delta * get_parents().front()->a_values.transpose();
+    biases -= learning_rate * (1. / m) * delta.rowwise().sum();
+}
+
+MatrixXd OutputLayer::getAValues() const {
+    return a_values;
 }

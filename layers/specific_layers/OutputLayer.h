@@ -19,8 +19,13 @@ class OutputLayer : public Layer {
 
     MatrixXd train_labels;
 public:
-    OutputLayer(MatrixXd train_labels, ActivationFunc activation);
+    OutputLayer(const MatrixXd& train_labels, ActivationFunc activation);
     void parameters_init();
+    void forward_prop();
+    void back_prop(double learning_rate);
+    MatrixXd getAValues() const;
+
+
 };
 
 

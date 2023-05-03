@@ -102,16 +102,66 @@ std::vector<LayerPtr> Model::get_all_layers() {
     return result;
 }
 
-void Model::forward_prop() {
-}
-
-void Model::back_prop() {
-}
-
 void Model::compile() {
     layers = toposort();
 
     for (const LayerPtr& el: layers) {
         el->parameters_init();
+    }
+}
+
+void Model::train(size_t epochs, double learning_rate) {
+#ifdef LOGGING
+    show_console_cursor(false);
+    const std::string out_of_all = " / " + std::to_string(epochs) + " ";
+    ProgressBar bar{
+            indicators::option::BarWidth{50},
+            indicators::option::Start{"["},
+            indicators::option::Fill{"■"},
+            indicators::option::Lead{"■"},
+            indicators::option::Remainder{"-"},
+            indicators::option::End{" ]"},
+            indicators::option::PrefixText{"DeepDendro Epoch: _ "},
+            indicators::option::PostfixText{"Loss function: _"},
+            indicators::option::ShowElapsedTime{true},
+            indicators::option::ShowRemainingTime{true},
+            indicators::option::ForegroundColor{Color::blue},
+            indicators::option::FontStyles{std::vector<FontStyle>{FontStyle::bold}},
+            indicators::option::MaxProgress{epochs}
+
+    };
+    double accuracy = 0;
+#endif
+    MatrixXd gradient;
+
+    for (size_t i = 0; i < epochs; ++i) {
+        forward_prop();
+
+#ifdef LOGGING
+//        accuracy = calc_accuracy(predict_after_forward_prop(), train_labels) * 100;
+        bar.set_option(indicators::option::PrefixText{"DeepDendro epoch: " + std::to_string(i + 1) + out_of_all});
+        bar.tick();
+//        bar.set_option(indicators::option::PostfixText{
+//                "Loss function: " +
+//                std::to_string(lossFunc().categoryCrossEntropy(layers.back()->getAValues(), train_labels)) +
+//                ", Accuracy: " + std::to_string(accuracy) + "%"});
+
+#endif
+        back_prop(learning_rate);
+
+    }
+
+
+}
+
+void Model::forward_prop() {
+    for (const LayerPtr& el: layers) {
+        el->forward_prop();
+    }
+}
+
+void Model::back_prop(double learning_rate) {
+    for (const LayerPtr& el: layers) {
+        el->back_prop(learning_rate);
     }
 }

@@ -12,6 +12,8 @@
 #include "activationFuncs.h"
 #include "lossFunc.h"
 #include "logging.h"
+#include "OutputLayer.h"
+#include "InputLayer.h"
 
 #include "Layer.h"
 
@@ -34,11 +36,11 @@ public:
     void save(std::vector<LayerPtr> &in_layers, LayerPtr &out_layer);
     void save(std::vector<LayerPtr> &in_layers, std::vector<LayerPtr> &out_layers);
 
-    void forward_prop(); // TODO
-    void back_prop(); // TODO
+    void forward_prop();
+    void back_prop(double learning_rate);
 
     void compile();
-    void train();
+    void train(size_t epochs, double learning_rate);
 };
 
 
