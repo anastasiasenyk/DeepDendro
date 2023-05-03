@@ -23,16 +23,18 @@ int main() {
     shared_layer second_layer = std::make_shared<HiddenLayer>(16, activation::relu);
     shared_layer third_layer = std::make_shared<HiddenLayer>(8, activation::relu);
     shared_layer output_1 = std::make_shared<OutputLayer>(data.testLabels, activation::softmax);
+    shared_layer output_2 = std::make_shared<OutputLayer>(data.testLabels, activation::softmax);
 
     (*second_layer)(first_layer);
-    (*third_layer)(second_layer);
-    (*output_1)(third_layer);
+    (*third_layer)(first_layer);
+    (*output_1)(second_layer);
+    (*output_2)(third_layer);
 
     Model model = Model();
-    model.save(first_layer, {output_1});
+    model.save(first_layer, {output_1, output_2});
 
     model.compile();
-    model.train(100, 0.05);
+    model.train(1000, 0.05);
 
     return 0;
 }

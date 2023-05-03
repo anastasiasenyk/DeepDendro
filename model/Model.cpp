@@ -151,7 +151,7 @@ void Model::train(size_t epochs, double learning_rate) {
         bar.set_option(indicators::option::PrefixText{"DeepDendro epoch: " + std::to_string(i + 1) + out_of_all});
         bar.tick();
         bar.set_option(indicators::option::PostfixText{
-                "Loss function: , Accuracy: " + std::to_string(accuracy) + "%"}
+                "Accuracy: " + std::to_string(accuracy) + "%"}
 //                std::to_string(lossFunc().categoryCrossEntropy(layers.back()->getAValues(), train_labels)) +
                 );
 
@@ -167,17 +167,25 @@ void Model::forward_prop() {
 }
 
 void Model::back_prop(double learning_rate) {
-    MatrixXd gradient;
     std::vector<LayerPtr> reversedLayers(layers);
     std::reverse(reversedLayers.begin(), reversedLayers.end());
-    for (const auto& el : reversedLayers) {
-        if (el->get_children().empty()) {
-            gradient = el->calc_first_back_prop();
+    std::unordered_map<LayerPtr, MatrixXd> layerMap;
+
+    for (auto& el : reversedLayers) {
+        std::vector<LayerPtr> children = el->get_children();
+
+        if (children.empty()) {
+            layerMap[el] = el->calc_first_back_prop();
         } else {
-            gradient = el->calc_back_prop(gradient);
+            layerMap[el] = layerMap[children[0]];
+            for (int i = 1; i < children.size(); i++) {
+                layerMap[el] += layerMap[children[i]];
+            }
+            layerMap[el] = el->calc_back_prop(layerMap[el]);
         }
     }
-    for (const auto& el : reversedLayers) {
+
+    for (auto& el : reversedLayers) {
         el->apply_back_prop(learning_rate);
     }
 }
