@@ -16,7 +16,6 @@ class HiddenLayer : public Layer {
     MatrixXd z_values;
     MatrixXd a_values;
     MatrixXd delta;
-
     ActivationFunc activ_func;
 
 public:
@@ -37,9 +36,25 @@ public:
 
     const MatrixXd &getZValues();
 
+    const MatrixXd &getDelta() const;
+
     void setAValues(const MatrixXd &aValues);
 
     void setZValues(const MatrixXd &zValues);
+
+    void setDelta(const MatrixXd &delta);
+
+    std::pair<int, int> getWeightsShape() const;
+
+    std::pair<int, int> getBiasesShape() const;
+
+    const MatrixXd &getWeights() const;
+
+    const VectorXd &getBiases() const;
+
+    void setWeights(const MatrixXd &weights);
+
+    void setBiases(const VectorXd &biases);
 
 };
 

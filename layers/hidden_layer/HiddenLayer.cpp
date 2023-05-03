@@ -58,3 +58,36 @@ void HiddenLayer::setZValues(const MatrixXd &zValues) {
 void HiddenLayer::setAValues(const MatrixXd &aValues) {
     a_values = aValues;
 }
+
+const MatrixXd &HiddenLayer::getDelta() const {
+    return delta;
+}
+
+void HiddenLayer::setDelta(const MatrixXd &delta) {
+    HiddenLayer::delta = delta;
+}
+
+std::pair<int, int> HiddenLayer::getWeightsShape() const {
+    return std::make_pair(weights.rows(), weights.cols());
+}
+
+std::pair<int, int> HiddenLayer::getBiasesShape() const {
+    return std::make_pair(biases.rows(), biases.cols());
+}
+
+const MatrixXd &HiddenLayer::getWeights() const {
+    return weights;
+}
+
+const VectorXd &HiddenLayer::getBiases() const {
+    return biases;
+}
+
+void HiddenLayer::setWeights(const MatrixXd &weights) {
+    HiddenLayer::weights = weights;
+}
+
+void HiddenLayer::setBiases(const VectorXd &biases) {
+    HiddenLayer::biases = biases;
+}
+

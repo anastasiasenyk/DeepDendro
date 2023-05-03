@@ -46,7 +46,7 @@ add_executable(DeepDendro
 
         parallelism/inter_model/inter_model.cpp
 
-        main.cpp activation_funcs/activationDerivative.cpp activation_funcs/activationDerivative.h regularization/data_normalization/MNISTProcess.cpp regularization/data_normalization/MNISTProcess.h Worker/Worker.cpp Worker/Worker.h)
+        main.cpp activation_funcs/activationDerivative.cpp activation_funcs/activationDerivative.h regularization/data_normalization/MNISTProcess.cpp regularization/data_normalization/MNISTProcess.h Worker/Worker.cpp Worker/Worker.h Worker/FirstWorker.cpp Worker/FirstWorker.h Worker/LastWorker.cpp Worker/LastWorker.h)
 
 #target_link_libraries(DeepDendro PRIVATE TBB::tbb)
 
@@ -72,6 +72,7 @@ include_directories(.
         regularization/data_normalization
         regularization/dropout
         parallelism/inter_model
+        Worker
         )
 
 

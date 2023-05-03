@@ -60,22 +60,16 @@ void MNISTProcess::enqueueMiniBatches(int batchSize, tbb::concurrent_queue<std::
         for (int i = 0; i < std::min(batchSize, numTrainImg - sample); ++i) {
             VectorXd oneHotLabel = readLbl();
             VectorXd flattenedImage = readImg(28, 28);
-//            for (int j = 0; j < 28; ++j) {
-//                for (int k = 0; k < 28; ++k) {
-//                    std::cout << flattenedImage(k*28+j);
-//                }
-//                std::cout << "\n";
-//            }
+
             batchData.col(i) = flattenedImage;
             batchLabels.col(i) = oneHotLabel;
-//            for (auto el: oneHotLabel) {
-//                std::cout << el <<" ";
-//            }
+
         }
 
         // Enqueue the mini-batch
         queue.push(std::make_pair(batchData, batchLabels));
     }
+    queue.push(std::make_pair(MatrixXd::Constant(1, 1, -1.0), MatrixXd::Constant(1, 1, -1.0)));
 }
 
 DataSets MNISTProcess::getData(std::string& pathToMNIST) {
@@ -109,6 +103,11 @@ DataSets MNISTProcess::getData(std::string& pathToMNIST) {
     return data;
 }
 
-MNISTProcess::~MNISTProcess() {
+void MNISTProcess::reset() {
     image.close();
+    label.close();
+}
+
+MNISTProcess::~MNISTProcess() {
+    reset();
 }

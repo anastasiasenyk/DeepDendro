@@ -32,6 +32,8 @@ public:
 
     void enqueueMiniBatches(int batchSize, tbb::concurrent_queue<std::pair<MatrixXd, MatrixXd>> &queue, std::string& pathToMNIST);
 
+    void reset();
+
     ~MNISTProcess();
 };
 
