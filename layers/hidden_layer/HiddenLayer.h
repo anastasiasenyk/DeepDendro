@@ -1,34 +1,30 @@
-////
-//// Created by Yaroslav Korch on 30.03.2023.
-////
 //
-//#ifndef DEEPDENDRO_HIDDENLAYER_H
-//#define DEEPDENDRO_HIDDENLAYER_H
+// Created by Yaroslav Korch on 30.03.2023.
 //
-//#include "activationFuncs.h"
-//#include "activationDerivative.h"
-//#include "Layer.h"
-//#include "iostream"
-//
-//class HiddenLayer : public Layer {
-//    MatrixXd weights;
-//    VectorXd biases;
-//    MatrixXd z_values;
-//    MatrixXd a_values;
-//
-//    ActivationFunc activ_func;
-//
-//    MatrixXd weight_delta_next_layer;
-//    // TODO: rewrite so this pointer will be shared
-//    HiddenLayer *prev_layer;
-//
-//public:
-//    // for first layer
-//    HiddenLayer(int curr_neurons, Shape prev_shape, ActivationFunc activation);
-//
-//    // for further layers
-//    HiddenLayer(int curr_neurons, HiddenLayer *ancestor, ActivationFunc activation);
-//
+
+#ifndef DEEPDENDRO_HIDDENLAYER_H
+#define DEEPDENDRO_HIDDENLAYER_H
+
+#include "iostream"
+#include "Layer.h"
+#include "activationFuncs.h"
+
+
+typedef std::pair<int, int> Shape;
+
+class HiddenLayer : public Layer {
+    MatrixXd weights;
+    VectorXd biases;
+    MatrixXd z_values;
+    MatrixXd a_values;
+    ActivationFunc activ_func;
+
+    MatrixXd weight_delta_next_layer_;
+public:
+    HiddenLayer(long curr_neurons, ActivationFunc activation);
+
+    void parameters_init();
+
 //    void first_forward_prop(const MatrixXd &input);
 //
 //    void forward_prop();
@@ -40,6 +36,6 @@
 //    void last_back_prop(double learning_rate, const MatrixXd &a_values);
 //
 //    const MatrixXd &getAValues();
-//};
-//
-//#endif //DEEPDENDRO_HIDDENLAYER_H
+};
+
+#endif //DEEPDENDRO_HIDDENLAYER_H

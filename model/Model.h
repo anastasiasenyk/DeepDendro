@@ -21,6 +21,7 @@ class Model {
 private:
     std::vector<LayerPtr> inputs;
     std::vector<LayerPtr> outputs;
+    std::vector<LayerPtr> layers;
 
     void reset_input_output();
     std::vector<LayerPtr> get_all_layers();
@@ -36,6 +37,7 @@ public:
     void forward_prop(); // TODO
     void back_prop(); // TODO
 
+    void compile();
     void train();
 };
 

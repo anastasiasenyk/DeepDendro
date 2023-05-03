@@ -5,26 +5,30 @@
 #ifndef DEEPDENDRO_LAYER_H
 #define DEEPDENDRO_LAYER_H
 
-
+#include "iostream"
+#include <memory>
+#include <utility>
+#include <vector>
 #include <Eigen/Dense>
 
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
-#include "iostream"
-#include <memory>
-#include <utility>
-#include <vector>
-
 
 class Layer : public std::enable_shared_from_this<Layer> {
 private:
-    std::pair<size_t, size_t> shape;
+    std::vector<long> shape;
     std::vector<std::shared_ptr<Layer>> parent_layers_;
     std::vector<std::shared_ptr<Layer>> child_layers_;
 
 public:
-    Layer(size_t shape_x, size_t shape_y) : shape(std::make_pair(shape_x, shape_y)) {}
+    explicit Layer(long num_neurons) {
+        shape.push_back(num_neurons);
+    }
+
+    explicit Layer(std::vector<long> layer_shape) {
+        shape.insert(shape.end(), layer_shape.begin(), layer_shape.end());
+    }
 
     std::vector<std::shared_ptr<Layer>> get_parents() {
         return parent_layers_;
@@ -34,34 +38,22 @@ public:
         return child_layers_;
     }
 
-    Layer add_child(const std::shared_ptr<Layer> &child) {
+    std::vector<long> get_shape() {
+        return shape;
+    }
+
+    Layer& add_child(const std::shared_ptr<Layer> &child) {
         child_layers_.push_back(child);
         return *this;
     }
 
-    Layer operator()(const std::shared_ptr<Layer> &parent) {
+    Layer& operator()(const std::shared_ptr<Layer> &parent) {
         parent_layers_.push_back(parent);
         parent->add_child(shared_from_this());
         return *this;
     }
 
-    void print_structure_TEMP() {
-        std::cout << "PARENT: ";
-        for (const auto &el: parent_layers_) {
-            std::cout << "(" << el->shape.first << ", " << el->shape.second << "), ";
-        }
-        std::cout << std::endl;
-
-        std::cout << "CHILD: ";
-        for (const auto &el: child_layers_) {
-            std::cout << "(" << el->shape.first << ", " << el->shape.second << "), ";
-        }
-        std::cout << std::endl;
-    }
-
-    void forward_prop() {} // TODO
-    void back_prop() {} // TODO
-
+    virtual void parameters_init(){};
 };
 
 

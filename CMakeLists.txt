@@ -12,6 +12,8 @@ add_executable(DeepDendro
         activation_funcs/activationFuncs.cpp
         evaluation_metrics/accuracy.cpp
         layers/hidden_layer/HiddenLayer.cpp
+        layers/specific_layers/InputLayer.cpp
+        layers/specific_layers/OutputLayer.cpp
         loss_functions/lossFunc.cpp
 
         model/Model.cpp
@@ -33,6 +35,7 @@ include_directories(.
         layers
         layers/parent_layer
         layers/hidden_layer
+        layers/specific_layers
         logging
 
         loss_functions

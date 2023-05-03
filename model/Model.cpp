@@ -4,7 +4,6 @@
 
 #include "Model.h"
 
-
 #include <unordered_map>
 #include <unordered_set>
 #include <queue>
@@ -109,11 +108,10 @@ void Model::forward_prop() {
 void Model::back_prop() {
 }
 
-void Model::train() {
-    std::vector<LayerPtr> layers = toposort();
+void Model::compile() {
+    layers = toposort();
 
     for (const LayerPtr& el: layers) {
-        el->print_structure_TEMP();
-        std::cout << std:: endl;
+        el->parameters_init();
     }
 }

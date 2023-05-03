@@ -1,33 +1,33 @@
-////
-//// Created by Yaroslav Korch on 30.03.2023.
-////
 //
-//#include "HiddenLayer.h"
+// Created by Yaroslav Korch on 30.03.2023.
 //
-//HiddenLayer::HiddenLayer(const int curr_neurons, Shape input_shape, ActivationFunc activation) :
-//        prev_layer{nullptr},
-//        biases{VectorXd::Zero(curr_neurons)},
-//        activ_func{activation} {
-//    weights = MatrixXd::Random(curr_neurons, input_shape.first);
-//    a_values = MatrixXd::Zero(curr_neurons, input_shape.second);
-//    weights /= sqrt(input_shape.first);
-//    shape.first = curr_neurons;
-//    shape.second = input_shape.second;
-//}
-//
-//
-//HiddenLayer::HiddenLayer(const int curr_neurons, HiddenLayer *ancestor, ActivationFunc activation) :
-//        prev_layer{ancestor},
-//        biases{VectorXd::Zero(curr_neurons)},
-//        activ_func{activation} {
-//    weights = MatrixXd::Random(curr_neurons, prev_layer->shape.first);
-//    a_values = MatrixXd::Zero(curr_neurons, prev_layer->shape.second);
-//    weights /= sqrt(ancestor->shape.first);
-//    shape.first = curr_neurons;
-//    shape.second = prev_layer->shape.second;
-//}
-//
-//
+
+#include "HiddenLayer.h"
+
+HiddenLayer::HiddenLayer(long curr_neurons, ActivationFunc activation) :
+        Layer(curr_neurons),
+        activ_func(activation),
+        biases(), weights(), z_values(), a_values() {
+}
+
+void HiddenLayer::parameters_init() {
+    long num_neurons = get_shape().back();
+    std::vector<std::shared_ptr<Layer>> parents = get_parents();
+
+    if (parents.size() > 1) {
+        throw std::logic_error("Layer has more than one parent. Only half-orphans are allowed.");
+    }
+
+    if (parents.empty()) {
+        throw std::logic_error("Layer should have one parent.");
+    }
+
+    biases = VectorXd::Zero(static_cast<long>(num_neurons));
+    weights = MatrixXd::Random(num_neurons, parents[0]->get_shape().back()); // TODO: change second param for general (conv layer)
+    weights /= sqrt(parents[0]->get_shape().back());
+//    a_values = MatrixXd::Zero(num_neurons, input_size); // TODO: add init
+}
+
 //void HiddenLayer::first_forward_prop(const MatrixXd &input) {
 //    z_values = weights * input;
 //    z_values.colwise() += biases;
@@ -37,7 +37,7 @@
 //void HiddenLayer::forward_prop() {
 //    first_forward_prop(prev_layer->a_values);
 //}
-//
+
 //void HiddenLayer::first_back_prop(double learning_rate, const MatrixXd &labels) {
 //    MatrixXd delta = a_values - labels;
 //
@@ -68,7 +68,7 @@
 //    weights -= learning_rate * (1 / m) * delta * input.transpose();
 //    biases -= learning_rate * (1 / m) * delta.rowwise().sum();
 //}
-//
+
 //const MatrixXd &HiddenLayer::getAValues() {
 //    return a_values;
 //}
