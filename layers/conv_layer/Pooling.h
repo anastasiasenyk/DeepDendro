@@ -17,6 +17,12 @@ enum PoolType {
 };
 
 
+struct PoolParameters {
+    PoolType pool_type;
+    Eigen::Index grid_size;
+    Eigen::Index stride;
+};
+
 template<size_t TensorDimension>
 class Pooling {
 protected:
@@ -26,9 +32,9 @@ protected:
     Shape grid_size;
     Shape stride;
     KernelT output;
-    Shape output_shape;
 
 public:
+    Shape output_shape;
 
     Pooling() = default;
 
@@ -53,6 +59,7 @@ Pooling<TensorDimension>::Pooling(Shape grid_size, Shape stride, Shape input_sha
         check_correct(no_zeros(grid_size));
         check_correct(no_zeros(stride));
         check_correct(no_zeros(input_shape));
+
         for (int i = 0; i < TensorDimension; ++i) {
             if (input_shape.at(i) < grid_size.at(i) || input_shape.at(i) < stride.at(i)) {
                 throw std::invalid_argument("Input shape must be greater than grid size and stride");
@@ -75,6 +82,8 @@ class MaxPool : public Pooling<TensorDimension> {
     using Shape = Eigen::array<Eigen::Index, TensorDimension>;
 
 public:
+
+    MaxPool() = default;
 
     MaxPool(const Shape &grid_size,
             const Shape &stride,
@@ -103,7 +112,7 @@ Scalar find_maximum(const Eigen::Tensor<Scalar, 3> &tensor) {
 
 
 template<size_t TensorDimension>
-void MaxPool<TensorDimension>::pool3D(const Eigen::Tensor<double, 3>& input) {
+void MaxPool<TensorDimension>::pool3D(const Eigen::Tensor<double, 3> &input) {
     if (TensorDimension != 3) {
         throw std::invalid_argument("MaxPool is only implemented for 3D tensors");
     }
