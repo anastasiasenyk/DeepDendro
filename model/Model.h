@@ -41,6 +41,7 @@ public:
 
     void compile();
     void train(size_t epochs, double learning_rate);
+
 };
 
 

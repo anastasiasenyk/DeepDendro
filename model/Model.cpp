@@ -1,6 +1,8 @@
 //
 // Created by Yaroslav Korch on 30.03.2023.
 //
+#define YELLOW  "\033[33m"
+#define RESET   "\033[0m"
 
 #include "Model.h"
 
@@ -130,7 +132,7 @@ void Model::train(size_t epochs, double learning_rate) {
             indicators::option::MaxProgress{epochs}
 
     };
-    double accuracy = 0;
+
 #endif
     MatrixXd gradient;
 
@@ -138,20 +140,24 @@ void Model::train(size_t epochs, double learning_rate) {
         forward_prop();
 
 #ifdef LOGGING
-//        accuracy = calc_accuracy(predict_after_forward_prop(), train_labels) * 100;
+        double accuracy = 0;
+        for (LayerPtr el: outputs) {
+            accuracy += el->calc_accuracy();
+        }
+        accuracy /= outputs.size();
+        accuracy *= 100;
+
+
         bar.set_option(indicators::option::PrefixText{"DeepDendro epoch: " + std::to_string(i + 1) + out_of_all});
         bar.tick();
-//        bar.set_option(indicators::option::PostfixText{
-//                "Loss function: " +
+        bar.set_option(indicators::option::PostfixText{
+                "Loss function: , Accuracy: " + std::to_string(accuracy) + "%"}
 //                std::to_string(lossFunc().categoryCrossEntropy(layers.back()->getAValues(), train_labels)) +
-//                ", Accuracy: " + std::to_string(accuracy) + "%"});
+                );
 
 #endif
         back_prop(learning_rate);
-
     }
-
-
 }
 
 void Model::forward_prop() {
@@ -161,7 +167,17 @@ void Model::forward_prop() {
 }
 
 void Model::back_prop(double learning_rate) {
-    for (const LayerPtr& el: layers) {
-        el->back_prop(learning_rate);
+    MatrixXd gradient;
+    std::vector<LayerPtr> reversedLayers(layers);
+    std::reverse(reversedLayers.begin(), reversedLayers.end());
+    for (const auto& el : reversedLayers) {
+        if (el->get_children().empty()) {
+            gradient = el->calc_first_back_prop();
+        } else {
+            gradient = el->calc_back_prop(gradient);
+        }
+    }
+    for (const auto& el : reversedLayers) {
+        el->apply_back_prop(learning_rate);
     }
 }

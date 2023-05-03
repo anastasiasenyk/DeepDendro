@@ -56,12 +56,20 @@ public:
         return *this;
     }
 
+    // TODO: that`s it a very bad implementation
     virtual void parameters_init(){};
     virtual void forward_prop(){};
-    void back_prop(double learning_rate){};
+//    virtual void back_prop(double learning_rate){};
+    virtual MatrixXd calc_gradient(){
+        return MatrixXd::Zero(0, 0);};
+    virtual MatrixXd calc_first_back_prop(){
+        return MatrixXd::Zero(0, 0);};
+    virtual MatrixXd calc_back_prop(const MatrixXd &gradient){
+        return MatrixXd::Zero(0, 0);};
+    virtual void apply_back_prop(double learning_rate){};
     virtual MatrixXd getAValues() const {
-        return MatrixXd::Zero(0, 0);
-    };
+        return MatrixXd::Zero(0, 0);};
+    virtual double calc_accuracy(){return 0;};
 };
 
 
