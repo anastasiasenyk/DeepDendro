@@ -9,6 +9,7 @@
 #include "activationFuncs.h"
 #include "activationDerivative.h"
 #include <unsupported/Eigen/CXX11/Tensor>
+#include <Eigen/Dense>
 #include "common_funcs.h"
 #include "Filter.h"
 #include "Pooling.h"
@@ -136,6 +137,13 @@ void ConvLayer<N_Filters, ConvLDimension>::forward_prop(const ConvLT &input) {
     }
 }
 
+template<size_t ConvLDimension>
+Eigen::Tensor<double, ConvLDimension> rotate_filter(const Eigen::Tensor<double, ConvLDimension> &filter) {
+    Eigen::array<int, 3> flip_order = {1, 2, 0};
+    Eigen::Tensor<double, 3> rotated_filter = filter.reverse(flip_order);
+    return rotated_filter;
+}
+
 template<size_t N_Filters, size_t ConvLDimension>
 void ConvLayer<N_Filters, ConvLDimension>::calc_back_prop(const ConvLT &delta) {
     auto to_separate_start = one_convolved_shape;
@@ -149,20 +157,48 @@ void ConvLayer<N_Filters, ConvLDimension>::calc_back_prop(const ConvLT &delta) {
         // the gradient marks are used as in scientific notations or amateur videos on YT
 
         ConvLT delta_piece = delta.slice(to_separate_start, one_pooled_shape);
+        std::cout << "Delta part: " << delta_piece.dimensions() << "\n";
 
         ConvLT dC(one_convolved_shape);
+        std::cout << "dC: " << dC.dimensions() << "\n";
+
         dC.setZero();
         auto before_pool = convolved_output.slice(to_separate_start, one_convolved_shape);
         auto after_pool = pooled_output.slice(to_separate_start, one_pooled_shape);
         default_pool.calc_grad_in_pool(before_pool, after_pool, dC, delta_piece);
 
         ConvLT dC_dZ = Tensor_ReLU_Derivative<3>(dC);
+        std::cout << "dC_dZ: " << dC_dZ.dimensions() << "\n";
 
         ConvLT dZ = dC * dC_dZ;
+        std::cout << "dZ: " << dZ.dimensions() << "\n";
 
         ConvLT dK = prev_a_values.convolve(dZ, dims_to_convolve);  // also, dF
+        std::cout << "dK: " << dK.dimensions() << "\n";
 
         auto dB = dZ.sum();
+
+
+        ConvLT rotated_filter_weights = rotate_filter<3>(filter.get_weights());
+        // 2*pad - filter + 1 = 0 ~ same convolution => pad = (filter - 1) / 2
+        Eigen::array<int, 3> padding_sizes;
+        // TODO: understand why there is a coefficient 2 here
+        for (int i = 0; i < ConvLDimension; ++i) {
+            padding_sizes[i] = 2 * static_cast<int>((filter_shape[i] - 1) / 2);
+        }
+
+        Eigen::array<std::pair<Eigen::Index, Eigen::Index>, 3> paddings;
+        paddings[0] = std::make_pair(padding_sizes[0], padding_sizes[0]);
+        paddings[1] = std::make_pair(padding_sizes[1], padding_sizes[1]);
+        paddings[2] = std::make_pair(padding_sizes[2], padding_sizes[2]);
+
+        ConvLT dZ_padded = dZ.pad(paddings, 0);
+        std::cout << "dZ_padded: " << dZ_padded.dimensions() << "\n";
+
+        ConvLT dX = dZ_padded.convolve(rotated_filter_weights, dims_to_convolve);
+
+        std::cout << "dX \n";
+        std::cout << dX.dimensions() << "\n";
 
         to_separate_start[ConvLDimension - 1] += dim_increment;
     }

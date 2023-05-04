@@ -42,6 +42,9 @@ public:
     explicit Filter(Shape filter_shape,
                     activation activation_func);
 
+    auto get_weights() const {
+        return kernel_weights;
+    }
 
     KernelT convolve(const KernelT &input) const {
         KernelT res = input.convolve(kernel_weights, dims_to_convolve) + bias;
