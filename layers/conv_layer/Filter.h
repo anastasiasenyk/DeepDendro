@@ -32,9 +32,6 @@ class Filter {
 
     ActivFunc<KernelDimension> activation_func;
 
-    KernelT gradient_weights{};
-    Eigen::Tensor<double, 0> gradient_bias{};
-
 public:
 
     Filter() = default;
@@ -50,6 +47,12 @@ public:
         KernelT res = input.convolve(kernel_weights, dims_to_convolve) + bias;
         return activation_func(res);
     }
+
+    void update_weights(KernelT dK, double dB, double lr) {
+        kernel_weights -= lr * dK;
+        bias -= lr * dB;
+    }
+
 };
 
 
@@ -72,6 +75,5 @@ Filter<KernelDimension>::Filter(Shape filter_shape,
     kernel_weights.resize(filter_shape);
     kernel_weights.setRandom();
 }
-
 
 #endif //DEEPDENDRO_FILTER_H

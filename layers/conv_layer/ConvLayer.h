@@ -32,6 +32,7 @@ class ConvLayer {
     ConvLT convolved_output;
     ConvLT pooled_output;
 
+
     MaxPool<ConvLDimension> default_pool;
 
 
@@ -43,7 +44,7 @@ public:
 
     void forward_prop(const ConvLT &input);
 
-    void calc_back_prop(const ConvLT &delta);
+    ConvLT calc_back_prop(const ConvLT &delta, double learning_rate);
 
     void print() {
         auto line = [](const auto &s){std::cout << s << "\n";};
@@ -145,7 +146,10 @@ Eigen::Tensor<double, ConvLDimension> rotate_filter(const Eigen::Tensor<double, 
 }
 
 template<size_t N_Filters, size_t ConvLDimension>
-void ConvLayer<N_Filters, ConvLDimension>::calc_back_prop(const ConvLT &delta) {
+Eigen::Tensor<double, ConvLDimension> ConvLayer<N_Filters, ConvLDimension>::calc_back_prop(const ConvLT &delta, const double learning_rate) {
+    ConvLT dX_all(prev_a_values.dimensions());
+    dX_all.setZero();
+
     auto to_separate_start = one_convolved_shape;
     auto dim_increment = one_convolved_shape[ConvLDimension - 1];
     for (int i = 0; i < ConvLDimension; ++i) {
@@ -153,14 +157,12 @@ void ConvLayer<N_Filters, ConvLDimension>::calc_back_prop(const ConvLT &delta) {
     }
     const Eigen::array<ptrdiff_t, 3> dims_to_convolve({0, 1, 2});
 
-    for (const auto &filter : filters){
+    for (auto &filter : filters){
         // the gradient marks are used as in scientific notations or amateur videos on YT
 
         ConvLT delta_piece = delta.slice(to_separate_start, one_pooled_shape);
-        std::cout << "Delta part: " << delta_piece.dimensions() << "\n";
 
         ConvLT dC(one_convolved_shape);
-        std::cout << "dC: " << dC.dimensions() << "\n";
 
         dC.setZero();
         auto before_pool = convolved_output.slice(to_separate_start, one_convolved_shape);
@@ -168,15 +170,12 @@ void ConvLayer<N_Filters, ConvLDimension>::calc_back_prop(const ConvLT &delta) {
         default_pool.calc_grad_in_pool(before_pool, after_pool, dC, delta_piece);
 
         ConvLT dC_dZ = Tensor_ReLU_Derivative<3>(dC);
-        std::cout << "dC_dZ: " << dC_dZ.dimensions() << "\n";
 
         ConvLT dZ = dC * dC_dZ;
-        std::cout << "dZ: " << dZ.dimensions() << "\n";
 
         ConvLT dK = prev_a_values.convolve(dZ, dims_to_convolve);  // also, dF
-        std::cout << "dK: " << dK.dimensions() << "\n";
 
-        auto dB = dZ.sum();
+        double dB = dZ.sum();
 
 
         ConvLT rotated_filter_weights = rotate_filter<3>(filter.get_weights());
@@ -193,22 +192,19 @@ void ConvLayer<N_Filters, ConvLDimension>::calc_back_prop(const ConvLT &delta) {
         paddings[2] = std::make_pair(padding_sizes[2], padding_sizes[2]);
 
         ConvLT dZ_padded = dZ.pad(paddings, 0);
-        std::cout << "dZ_padded: " << dZ_padded.dimensions() << "\n";
 
         ConvLT dX = dZ_padded.convolve(rotated_filter_weights, dims_to_convolve);
+        dX_all += dX;
 
-        std::cout << "dX \n";
-        std::cout << dX.dimensions() << "\n";
+        filter.update_weights(dK, dB, learning_rate);
+
 
         to_separate_start[ConvLDimension - 1] += dim_increment;
     }
+
+    return dX_all;
 }
 
-Eigen::MatrixXd flatten(const Eigen::Tensor<double, 3> &tensor) {
-    Eigen::TensorMap<Eigen::Tensor<double, 1>> flattened_tensor(const_cast<double *>(tensor.data()), tensor.size());
-    Eigen::Map<Eigen::MatrixXd> matrix(flattened_tensor.data(), tensor.dimension(0), tensor.dimension(1));
-    return matrix;
-}
 
 
 #endif //DEEPDENDRO_CONVLAYER_H
