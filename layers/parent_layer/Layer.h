@@ -50,6 +50,11 @@ public:
         return *this;
     }
 
+    Layer& add_parent(const std::shared_ptr<Layer> &parent) {
+        parent_layers_.push_back(parent);
+        return *this;
+    }
+
     Layer& operator()(const std::shared_ptr<Layer> &parent) {
         parent_layers_.push_back(parent);
         parent->add_child(shared_from_this());
@@ -59,7 +64,8 @@ public:
     // TODO: that`s it a very bad implementation
     virtual void parameters_init(){};
     virtual void forward_prop(){};
-//    virtual void back_prop(double learning_rate){};
+    virtual MatrixXd getTrainLabels() const{
+        return MatrixXd::Zero(0, 0);};
     virtual MatrixXd calc_gradient(){
         return MatrixXd::Zero(0, 0);};
     virtual MatrixXd calc_first_back_prop(){

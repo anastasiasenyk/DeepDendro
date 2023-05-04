@@ -14,6 +14,7 @@ add_executable(DeepDendro
         layers/hidden_layer/HiddenLayer.cpp
         layers/specific_layers/InputLayer.cpp
         layers/specific_layers/OutputLayer.cpp
+        layers/specific_layers/ConcatenatedLayer.cpp
         loss_functions/lossFunc.cpp
 
         model/Model.cpp

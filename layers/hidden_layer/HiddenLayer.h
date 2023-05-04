@@ -22,16 +22,12 @@ class HiddenLayer : public Layer {
 
     ActivationFunc activ_func;
     ActivationFuncDer activ_func_derivative;
-
-    MatrixXd weight_delta_next_layer_;
 public:
     HiddenLayer(long curr_neurons, activation activation);
 
     void parameters_init();
 
     void forward_prop();
-
-//    void back_prop(double learning_rate);
 
     MatrixXd calc_gradient();
 

@@ -13,7 +13,7 @@ HiddenLayer::HiddenLayer(long curr_neurons, activation type) :
 }
 
 void HiddenLayer::parameters_init() {
-    long num_neurons = get_shape().back();
+    long num_neurons = get_shape().front();
     std::vector<std::shared_ptr<Layer>> parents = get_parents();
 
     if (parents.size() > 1) {
@@ -39,18 +39,6 @@ void HiddenLayer::forward_prop() {
 MatrixXd HiddenLayer::getAValues() const {
     return a_values;
 }
-
-
-//void HiddenLayer::back_prop(double learning_rate) {
-//    MatrixXd delta = a_values - get_parents().front()->a_values;
-//
-//    get_parents().front()->weight_delta_next_layer_ = weights.transpose() * delta;
-//
-//    auto m = static_cast<double> (delta.cols());
-//
-//    weights -= learning_rate * (1. / m) * delta * get_parents().front()->a_values.transpose();
-//    biases -= learning_rate * (1. / m) * delta.rowwise().sum();
-//}
 
 inline MatrixXd HiddenLayer::calc_gradient() {
     return weights.transpose() * delta;

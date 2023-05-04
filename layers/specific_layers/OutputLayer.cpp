@@ -5,9 +5,9 @@
 
 #include "OutputLayer.h"
 
-OutputLayer::OutputLayer(const MatrixXd& train_labels, activation type) :
-    train_labels(train_labels),
-    Layer({train_labels.rows(), train_labels.cols()}){
+OutputLayer::OutputLayer(const MatrixXd &train_labels, activation type) :
+        train_labels(train_labels),
+        Layer({train_labels.rows(), train_labels.cols()}) {
     activ_func = find_activation_func(type);
     activ_func_derivative = find_activation_der(activ_func);
 }
@@ -36,31 +36,24 @@ void OutputLayer::forward_prop() {
     a_values = activ_func(z_values);
 }
 
-void OutputLayer::back_prop(double learning_rate) {
-    MatrixXd delta = a_values - train_labels;
-
-    get_parents().front()->weight_delta_next_layer_ = weights.transpose() * delta;
-
-    auto m = static_cast<double> (delta.cols());
-
-    weights -= learning_rate * (1. / m) * delta * get_parents().front()->a_values.transpose();
-    biases -= learning_rate * (1. / m) * delta.rowwise().sum();
-}
-
 MatrixXd OutputLayer::getAValues() const {
     return a_values;
 }
 
+MatrixXd OutputLayer::getTrainLabels() const {
+    return train_labels;
+}
+
 MatrixXd OutputLayer::predict_after_forward_prop() {
-        MatrixXd predicted_values = a_values;
-        Eigen::Index numCols = predicted_values.cols();
-        int maxRowIndex;
-        for (Eigen::Index i = 0; i < numCols; i++) {
-            predicted_values.col(i).maxCoeff(&maxRowIndex);
-            predicted_values.col(i).setZero();
-            predicted_values(maxRowIndex, i) = 1;
-        }
-        return predicted_values;
+    MatrixXd predicted_values = a_values;
+    Eigen::Index numCols = predicted_values.cols();
+    int maxRowIndex;
+    for (Eigen::Index i = 0; i < numCols; i++) {
+        predicted_values.col(i).maxCoeff(&maxRowIndex);
+        predicted_values.col(i).setZero();
+        predicted_values(maxRowIndex, i) = 1;
+    }
+    return predicted_values;
 }
 
 double OutputLayer::calc_accuracy() {

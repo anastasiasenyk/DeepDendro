@@ -21,24 +21,28 @@ void Model::save(LayerPtr &in_layer, LayerPtr &out_layer) {
     reset_input_output();
     inputs.push_back(in_layer);
     outputs.push_back(out_layer);
+    compile();
 }
 
 void Model::save(LayerPtr &in_layer, std::vector<LayerPtr> &&out_layers) {
     reset_input_output();
     inputs.push_back(in_layer);
     outputs.insert(outputs.end(), out_layers.begin(), out_layers.end());
+    compile();
 }
 
 void Model::save(std::vector<LayerPtr> &in_layers, LayerPtr &out_layer) {
     reset_input_output();
     inputs.insert(inputs.end(), in_layers.begin(), in_layers.end());
     outputs.push_back(out_layer);
+    compile();
 }
 
 void Model::save(std::vector<LayerPtr> &in_layers, std::vector<LayerPtr> &out_layers) {
     reset_input_output();
     inputs.insert(inputs.end(), in_layers.begin(), in_layers.end());
     outputs.insert(outputs.end(), out_layers.begin(), out_layers.end());
+    compile();
 }
 
 std::vector<LayerPtr> Model::toposort() {
@@ -141,8 +145,11 @@ void Model::train(size_t epochs, double learning_rate) {
 
 #ifdef LOGGING
         double accuracy = 0;
+        double loss = 0;
+
         for (LayerPtr el: outputs) {
             accuracy += el->calc_accuracy();
+            loss += lossFunc().categoryCrossEntropy(el->getAValues(), el->getTrainLabels());
         }
         accuracy /= outputs.size();
         accuracy *= 100;
@@ -151,9 +158,9 @@ void Model::train(size_t epochs, double learning_rate) {
         bar.set_option(indicators::option::PrefixText{"DeepDendro epoch: " + std::to_string(i + 1) + out_of_all});
         bar.tick();
         bar.set_option(indicators::option::PostfixText{
-                "Accuracy: " + std::to_string(accuracy) + "%"}
-//                std::to_string(lossFunc().categoryCrossEntropy(layers.back()->getAValues(), train_labels)) +
-                );
+                "Loss function: " +
+                std::to_string(loss) +
+                ", Accuracy: " + std::to_string(accuracy) + "%"});
 
 #endif
         back_prop(learning_rate);
