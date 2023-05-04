@@ -11,8 +11,6 @@ include_directories(/usr/local/include/)
 add_executable(DeepDendro
         evaluation_metrics/accuracy.cpp
         layers/hidden_layer/HiddenLayer.cpp
-        layers/conv_layer/ConvLayer.cpp
-        layers/conv_layer/Filter.cpp
         loss_functions/lossFunc.cpp
 
         model/Model.cpp

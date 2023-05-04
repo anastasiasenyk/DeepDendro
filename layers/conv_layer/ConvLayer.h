@@ -23,7 +23,7 @@ class ConvLayer {
 
     Filters filters;
     Shape filter_shape;
-    ConvLT a_values;
+    ConvLT prev_a_values;
 
     Shape one_convolved_shape;
     Shape one_pooled_shape;
@@ -40,19 +40,39 @@ public:
 
     auto convolve(const Filter<ConvLDimension> &filter);
 
-    void convolve_all();
+    void forward_prop(const ConvLT &input);
+
+    void calc_back_prop(const ConvLT &delta);
 
     void print() {
-        std::cout << convolved_output << std::endl;
+        auto line = [](const auto &s){std::cout << s << "\n";};
+        line("Filter shape:");
+        line(filter_shape.at(0));
+        line(filter_shape.at(1));
+        line(filter_shape.at(2));
+
+        line("One convolved shape:");
+        line(one_convolved_shape.at(0));
+        line(one_convolved_shape.at(1));
+        line(one_convolved_shape.at(2));
+
+        line("One pooled shape:");
+        line(one_pooled_shape.at(0));
+        line(one_pooled_shape.at(1));
+        line(one_pooled_shape.at(2));
+
+        line("Convolved output:");
+        line(convolved_output.dimensions());
+
+        line("Pooled output:");
+        line(pooled_output.dimensions());
     }
-
-
 };
 
 template<size_t N_Filters, size_t ConvLDimension>
 ConvLayer<N_Filters, ConvLDimension>::ConvLayer(const Shape filter_shape, const Shape input_shape,
                                                 const PoolParameters pool_args): filter_shape{
-        filter_shape}, filters{}, a_values{}, convolved_output{}, default_pool{} {
+        filter_shape}, filters{}, prev_a_values{}, convolved_output{}, default_pool{} {
 
     {
         check_correct(no_zeros(filter_shape));
@@ -81,45 +101,77 @@ ConvLayer<N_Filters, ConvLDimension>::ConvLayer(const Shape filter_shape, const 
         convolved_output.resize(convolved_shape);
     }
 
-    a_values.resize(input_shape);
-
-    // TODO: remove random initialization
-    a_values.setRandom();
+    prev_a_values.resize(input_shape);
 }
 
 template<size_t N_Filters, size_t ConvLDimension>
 auto ConvLayer<N_Filters, ConvLDimension>::convolve(const Filter<ConvLDimension> &filter) {
-    return filter.convolve(a_values);
+    return filter.convolve(prev_a_values);
 }
 
 template<size_t N_Filters, size_t ConvLDimension>
-void ConvLayer<N_Filters, ConvLDimension>::convolve_all() {
+void ConvLayer<N_Filters, ConvLDimension>::forward_prop(const ConvLT &input) {
+    prev_a_values = input;
 
     Eigen::Tensor<double, ConvLDimension> conv_res;
     Eigen::Tensor<double, ConvLDimension> pool_res;
 
-    auto to_combine_conv_start = one_convolved_shape;
-    auto to_combine_pool_start = one_pooled_shape;
+    auto to_combine_start = one_convolved_shape;
 
     auto dim_increment = one_convolved_shape[ConvLDimension - 1];
 
     for (int i = 0; i < ConvLDimension; ++i) {
-        to_combine_conv_start[i] = 0;
-        to_combine_pool_start[i] = 0;
+        to_combine_start[i] = 0;
     }
 
     for (size_t i = 0; i < N_Filters; ++i) {
         conv_res = convolve(filters[i]);
 
-        convolved_output.slice(to_combine_conv_start, one_convolved_shape) = conv_res;
+        convolved_output.slice(to_combine_start, one_convolved_shape) = conv_res;
 
         default_pool.pool3D(conv_res);
-        pooled_output.slice(to_combine_pool_start, one_pooled_shape) = default_pool.get_output();
+        pooled_output.slice(to_combine_start, one_pooled_shape) = default_pool.get_output();
 
-        to_combine_conv_start[ConvLDimension - 1] += dim_increment;
-        to_combine_pool_start[ConvLDimension - 1] += dim_increment;
+        to_combine_start[ConvLDimension - 1] += dim_increment;
     }
+}
 
+template<size_t N_Filters, size_t ConvLDimension>
+void ConvLayer<N_Filters, ConvLDimension>::calc_back_prop(const ConvLT &delta) {
+    auto to_separate_start = one_convolved_shape;
+    auto dim_increment = one_convolved_shape[ConvLDimension - 1];
+    for (int i = 0; i < ConvLDimension; ++i) {
+        to_separate_start[i] = 0;
+    }
+    const Eigen::array<ptrdiff_t, 3> dims_to_convolve({0, 1, 2});
+
+    for (const auto &filter : filters){
+        // the gradient marks are used as in scientific notations or amateur videos on YT
+
+        ConvLT delta_piece = delta.slice(to_separate_start, one_pooled_shape);
+
+        ConvLT dC(one_convolved_shape);
+        dC.setZero();
+        auto before_pool = convolved_output.slice(to_separate_start, one_convolved_shape);
+        auto after_pool = pooled_output.slice(to_separate_start, one_pooled_shape);
+        default_pool.calc_grad_in_pool(before_pool, after_pool, dC, delta_piece);
+
+        ConvLT dC_dZ = Tensor_ReLU_Derivative<3>(dC);
+
+        ConvLT dZ = dC * dC_dZ;
+
+        ConvLT dK = prev_a_values.convolve(dZ, dims_to_convolve);  // also, dF
+
+        auto dB = dZ.sum();
+
+        to_separate_start[ConvLDimension - 1] += dim_increment;
+    }
+}
+
+Eigen::MatrixXd flatten(const Eigen::Tensor<double, 3> &tensor) {
+    Eigen::TensorMap<Eigen::Tensor<double, 1>> flattened_tensor(const_cast<double *>(tensor.data()), tensor.size());
+    Eigen::Map<Eigen::MatrixXd> matrix(flattened_tensor.data(), tensor.dimension(0), tensor.dimension(1));
+    return matrix;
 }
 
 
