@@ -5,29 +5,24 @@
 #include "Model.h"
 #include "MNISTProcess.h"
 #include "Filter.h"
-#include "ConvLayer.h"
+#include "Pooling.h"
+#include "Convolutions.h"
 
 int main() {
     srand((unsigned int) time(0));
 
-    ConvLayer<2, 3> ConvL{{3, 3, 3},
-                          {6, 6, 3},
-    };
-    ConvL.convolve_all();
-//    ConvL.print();
-
-
     MNISTProcess mnistProcessTrain = MNISTProcess();
     DataSets data = mnistProcessTrain.getData("../MNIST_ORG");
+
+    Eigen::TensorMap<Eigen::Tensor<double, 3>> input3d(data.trainData.data(), data.trainData.rows(),
+                                                       data.trainData.cols(), 1);
+
 
     Model model;
     model.addInput(data.trainData);
     model.addOutput(data.trainLabels);
 
 
-    model.addLayer(128, activation::relu);
-    model.addLayer(64, activation::relu);
-    model.train(30, 0.05);
     model.calc_accuracy(model.predict(data.testData), data.testLabels, true);
     return 0;
 }

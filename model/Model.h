@@ -13,7 +13,7 @@
 #include "activationFuncs.h"
 #include "lossFunc.h"
 #include "logging.h"
-#include "ConvLayer.h"
+#include "Convolutions.h"
 
 class Model {
     std::vector<HiddenLayer> dense_layers;

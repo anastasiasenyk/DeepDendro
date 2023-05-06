@@ -7,14 +7,15 @@
 
 #include <unsupported/Eigen/CXX11/Tensor>
 
+
 template<size_t Dimension>
-Eigen::Tensor<double, Dimension> Tensor_ReLU(Eigen::Tensor<double, Dimension> &tensor) {
+Eigen::Tensor<double, Dimension> Tensor_ReLU(const Eigen::Tensor<double, Dimension> &tensor) {
     return tensor.unaryExpr([](double x) { return x > 0 ? x : 0; });
 }
 
 
 template<size_t Dimension>
-Eigen::Tensor<double, Dimension> Tensor_ReLU_Derivative(Eigen::Tensor<double, Dimension> &tensor) {
+Eigen::Tensor<double, Dimension> Tensor_ReLU_Derivative(const Eigen::Tensor<double, Dimension> &tensor) {
     return tensor.unaryExpr([](double x) { return static_cast<double>(x > 0); });
 }
 
