@@ -42,7 +42,7 @@ Convolutional3D conv3d{
         {28, 28, 1}};
 ```
 To better understand the dimensions, one can use the ```.print_structure()``` method.
-For example, here the output of the layer would be a Tensor with shape $(26, 26, N_Filters)$.
+For example, here the output of the layer would be a Tensor with shape $(26, 26, N_{Filters})$.
 
 ```c++
 conv3d.print_structure();
