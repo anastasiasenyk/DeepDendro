@@ -17,12 +17,13 @@
 class FlowLayer : public Layer {
     ActivationFunc activ_func;
     tbb::concurrent_vector<MatrixXd> weight_stash; // for weight stashing of different micro-batches
+    // TODO: bias is just the same number in a vector. No need to store it in a vector, just one value is enough
     tbb::concurrent_vector<VectorXd> bias_stash; // for bias stashing of different micro-batches
     tbb::concurrent_unordered_map<size_t, size_t> stash_map; // for keeping correspondence between micro-batch and its weights
 
     MatrixXd z_value;
 
-    std::queue<MatrixXd> z_values; // for dZ computing
+    tbb::concurrent_queue<MatrixXd> z_values; // for dZ computing
 
 
 
@@ -36,8 +37,11 @@ protected:
     std::vector<MatrixXd> dz_values; // for weight update
     MatrixXd dz_value;
     MatrixXd a_value;
-
 public:
+    const MatrixXd &getAValue() const {
+        return a_value;
+    }
+
     FlowLayer(const int curr_neurons, Shape input_shape, ActivationFunc activation, size_t update_num):
             activ_func(activation), micro_batch_num_forw(0), micro_batch_num_back(0),update_after(update_num)
     {
@@ -54,10 +58,11 @@ public:
         // always use the latest version of weights for forward prop
         z_value = weight_stash.back() * prev_a_values;
         z_value.colwise() += bias_stash.back();
+        z_values.emplace(z_value); // store for backprop
         a_value = activ_func(z_value);
 
         // stash weights
-        stash_map[micro_batch_num_forw++] = weight_stash.size();
+        stash_map[micro_batch_num_forw++] = weight_stash.size()-1;
 
     }
 
@@ -69,12 +74,12 @@ public:
         // there's no way, one micro-batch overtakes another,
         // so their backprop will be calculated in the same order as forward prop
         // therefore, queue is the best choice here
-        MatrixXd act_func_der = find_activation_der(activ_func)(z_values.front());
-        z_values.pop(); // pop front value, basically the oldest one in the queue
-
-        dz_value = gradient.cwiseProduct(act_func_der);
-        dz_values.emplace_back(dz_value); // store for weight updates
-        return calc_gradient();
+        if(z_values.try_pop(z_value)) {
+            MatrixXd act_func_der = find_activation_der(activ_func)(z_value);
+            dz_value = gradient.cwiseProduct(act_func_der);
+            dz_values.emplace_back(dz_value); // store for weight updates
+            return calc_gradient();
+        }
     }
 
 //    MatrixXd calc_first_back_prop(const MatrixXd &labels) {
@@ -85,9 +90,6 @@ public:
 
     void update_weights(double learning_rate) {
         // Only update weights every m micro-batches
-        if (micro_batch_num_back < update_after) {
-            return;
-        }
 
         MatrixXd res_weights = MatrixXd::Zero(dz_values.front().rows(), dz_values.front().cols());
         VectorXd res_biases = VectorXd::Zero(dz_values.front().rows());
@@ -95,7 +97,7 @@ public:
         // Compute the average of the gradients over m micro-batches
         for (int i = 0; i < update_after; ++i) {
             res_weights += dz_values[i];
-            res_biases += dz_values[i].colwise().sum();  // Bias gradient is the sum across the columns
+            res_biases += dz_values[i].rowwise().sum();  // Bias gradient is the sum across the columns
         }
         res_weights /= static_cast<double>(update_after);
         res_biases /= static_cast<double>(update_after);

@@ -4,7 +4,10 @@
 
 #ifndef DEEPDENDRO_FLOWOUTPUTLAYER_H
 #define DEEPDENDRO_FLOWOUTPUTLAYER_H
+
+#include <iostream>
 #include "FlowLayer.h"
+#include "lossFunc.h"
 
 class FlowOutputLayer : public FlowLayer {
     tbb::concurrent_unordered_map<size_t, MatrixXd> a_value_stash;  // stash a_value for each micro-batch
@@ -19,19 +22,18 @@ public:
         a_value_stash[micro_batch_num_forw] = a_value;
     }
 
-    MatrixXd calc_first_back_prop(size_t micro_batch_num) {
+    MatrixXd calc_first_back_prop(const MatrixXd &prev_a_values) {
         MatrixXd curr_labels;
         if (labels.try_pop(curr_labels)) {
-            dz_value = a_value_stash[micro_batch_num] - curr_labels;
-
+            dz_value = prev_a_values - curr_labels;
+            std::cout << lossFunc().categoryCrossEntropy(prev_a_values, curr_labels) << "\n";
             dz_values.emplace_back(dz_value); // store for weight updates
-            // todo: may cause UB. Erase is unsafe
-            a_value_stash.unsafe_erase(micro_batch_num);
             return calc_gradient();
         }
     }
 
     void set_labels(const MatrixXd& micro_label) {
+//        std::cout << "RECEIVED LABELS\n";
         labels.emplace(micro_label);
     }
 };
