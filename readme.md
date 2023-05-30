@@ -25,7 +25,10 @@
 
 ![itsgift](https://user-images.githubusercontent.com/92575094/230293555-980fba42-5c51-461b-8496-6e851bdb3aa2.gif)
 
+----------
+
 # Features
+
 ## Convolutional layers
 
 ### 2D
@@ -49,6 +52,7 @@ conv3d.print_structure();
 ```
 
 
+----------
 
 ## Pooling layers
 
@@ -103,3 +107,15 @@ Eigen::Tensor<double, 3> original_tensor = flattening3D.back_to_tensor(flattened
 
 
 In both examples, the ```input_tensor``` and ```original_tensor``` are equal.
+
+----------
+
+<details>
+
+<summary><span style="font-size:24px;"> Testing </span></summary>
+
+To test the library yourself, you can download ```CIFAR10``` dataset
+```shell
+sh CIFAR10/download_cifar10.sh
+```
+</details>

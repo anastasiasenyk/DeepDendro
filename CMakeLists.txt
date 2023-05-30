@@ -20,6 +20,7 @@ add_executable(DeepDendro
         model_management/save_model_state/save_model.cpp
 
         regularization/data_normalization/dataProcessing.cpp
+        regularization/data_normalization/CIFAR10_Reader.cpp
         regularization/dropout/dropout.cpp
 
         parallelism/inter_model/inter_model.cpp
