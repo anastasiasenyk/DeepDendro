@@ -7,31 +7,45 @@
 
 #include <exception>
 #include "Layer.h"
+#include <map>
+#include <unsupported/Eigen/CXX11/Tensor>
 
-typedef MatrixXd (*ActivationFunc)(const MatrixXd &);
+template<typename T>
+using ActivationFunc = T (*)(const T &input);
 
-enum activation {
-    sigmoid,
-    relu,
-    tanhyper,
-    softmax
-};
 
-MatrixXd ReLU(const MatrixXd &input);
 
-MatrixXd Sigmoid(const MatrixXd &input);
+template<typename T>
+T ReLU(const T &input) {
+    return input.cwiseMax(0);
+}
 
-MatrixXd Tanh(const MatrixXd &input);
+template<typename T>
+T Sigmoid(const T &input) {
+    return 1.0 / (1.0 + (-input.array()).exp());
+}
 
-MatrixXd Softmax(const MatrixXd &input);
+template<typename T>
+T Tanh(const T &input) {
+    return input.array().tanh();
+}
 
-ActivationFunc find_activation_func(activation type);
+template<typename T, typename V>
+T Softmax(const T &input) {
+    // applies softmax to every column of the matrix
+    T expMatrix = input.array().exp();
+    V sumExp = expMatrix.colwise().sum();
+    T result = expMatrix.array().rowwise() / sumExp.transpose().array();
+    return result;
+}
+
 
 class ActivationNotFound : public std::exception {
 public:
-    const char *what() const noexcept override {
+    [[nodiscard]] const char *what() const noexcept override {
         return "Unknown activation function";
     }
 };
+
 
 #endif //DEEPDENDRO_ACTIVATIONFUNCS_H

@@ -7,14 +7,16 @@
 
 
 #include <Eigen/Dense>
+#include <cppad/cppad.hpp>
+
+
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
-typedef std::pair<int, int> Shape;
+
+typedef std::pair<size_t, size_t> MShape;
 
 class Layer {
-public:
-    Shape shape;
 };
 
 

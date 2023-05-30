@@ -13,11 +13,11 @@
 #include "activationFuncs.h"
 #include "lossFunc.h"
 #include "logging.h"
-
+#include "Convolutions.h"
 
 class Model {
-    std::vector<HiddenLayer> layers;
-    MatrixXd train_data;
+    std::vector<HiddenLayer> dense_layers;
+    MatrixXd train_data{};
     MatrixXd train_labels;
 
     MatrixXd predict_after_forward_prop();
@@ -31,14 +31,16 @@ public:
     void addOutput(const MatrixXd &labels);
 
     // by default, we have a straight-forward model (no branching)
-    void addLayer(int neurons, activation activationType);
+    void addDense(int neurons, activation activationType);
 
-    void train(size_t epochs = 10, double learning_rate = 0.005);
+    void train(size_t epochs = 10, double learning_rate = 0.005, bool verbose = true);
+
 
     MatrixXd predict(const MatrixXd &testData);
     double calc_accuracy(const MatrixXd &predicted, const MatrixXd &true_labels, bool verbose = false);
 
     void test();
+
 };
 
 

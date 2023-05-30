@@ -5,7 +5,6 @@
 #ifndef DEEPDENDRO_HIDDENLAYER_H
 #define DEEPDENDRO_HIDDENLAYER_H
 
-#include "activationFuncs.h"
 #include "activationDerivative.h"
 #include "Layer.h"
 #include "iostream"
@@ -17,11 +16,12 @@ class HiddenLayer : public Layer {
     MatrixXd a_values;
     MatrixXd delta;
 
-    ActivationFunc activ_func;
+    ActivationFunc<MatrixXd> activ_func;
+    ActivationFunc<MatrixXd> activ_func_derivative;
 
 public:
-    // for first layer
-    HiddenLayer(int curr_neurons, Shape prev_shape, ActivationFunc activation);
+    MShape shape;
+    HiddenLayer(int curr_neurons, MShape prev_shape, activation type);
 
     void forward_prop(const MatrixXd &prev_a_values);
 
