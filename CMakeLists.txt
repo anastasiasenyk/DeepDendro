@@ -43,6 +43,7 @@ include_directories(.
         regularization/data_normalization
         regularization/dropout
         parallelism/inter_model
+        layers/flattening_layer
         )
 
 
@@ -52,7 +53,3 @@ if (DEBUG)
     add_compile_definitions(DEBUG)
 endif()
 
-option(LOGGING "Enable debug output" ON)
-if (LOGGING)
-    add_compile_definitions(LOGGING)
-endif()

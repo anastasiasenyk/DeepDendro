@@ -33,7 +33,7 @@ public:
     // by default, we have a straight-forward model (no branching)
     void addDense(int neurons, activation activationType);
 
-    void train(size_t epochs = 10, double learning_rate = 0.005);
+    void train(size_t epochs = 10, double learning_rate = 0.005, bool verbose = true);
 
 
     MatrixXd predict(const MatrixXd &testData);

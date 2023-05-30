@@ -36,11 +36,6 @@ inline void check_correct(bool exp){
     }
 }
 
-inline Eigen::VectorXd flatten(const Eigen::Tensor<double, 3> &tensor) {
-    Eigen::TensorMap<Eigen::Tensor<double, 1>> flattened_tensor(const_cast<double *>(tensor.data()), tensor.size());
-    Eigen::Map<Eigen::VectorXd> vector(flattened_tensor.data(), tensor.dimension(0) * tensor.dimension(1) * tensor.dimension(2));
-    return vector;
-}
 
 
 

@@ -55,7 +55,7 @@ public:
     KernelT rotate_filter() const;
 
     KernelT activation_derivative(const KernelT &activated) const {
-        return  activation_func_derivative(activated);
+        return activation_func_derivative(activated);
     }
 
 

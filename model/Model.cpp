@@ -29,29 +29,25 @@ void Model::addDense(int neurons, activation activationType) {
 }
 
 
-
-void Model::train(size_t epochs, double learning_rate) {
-#ifdef LOGGING
-        show_console_cursor(false);
-        const std::string out_of_all = " / " + std::to_string(epochs) + " ";
-        ProgressBar bar{
-                indicators::option::BarWidth{50},
-                indicators::option::Start{"["},
-                indicators::option::Fill{"■"},
-                indicators::option::Lead{"■"},
-                indicators::option::Remainder{"-"},
-                indicators::option::End{" ]"},
-                indicators::option::PrefixText{"DeepDendro Epoch: _ "},
-                indicators::option::PostfixText{"Loss function: _"},
-                indicators::option::ShowElapsedTime{true},
-                indicators::option::ShowRemainingTime{true},
-                indicators::option::ForegroundColor{Color::blue},
-                indicators::option::FontStyles{std::vector<FontStyle>{FontStyle::bold}},
-                indicators::option::MaxProgress{epochs}
-
-    };
+void Model::train(size_t epochs, double learning_rate, const bool verbose) {
+    const std::string out_of_all = " / " + std::to_string(epochs) + " ";
     double accuracy = 0;
-#endif
+    show_console_cursor(false);
+    ProgressBar bar{
+            indicators::option::BarWidth{50},
+            indicators::option::Start{"["},
+            indicators::option::Fill{"■"},
+            indicators::option::Lead{"■"},
+            indicators::option::Remainder{"-"},
+            indicators::option::End{" ]"},
+            indicators::option::PrefixText{"DeepDendro Epoch: _ "},
+            indicators::option::PostfixText{"Loss function: _"},
+            indicators::option::ShowElapsedTime{true},
+            indicators::option::ShowRemainingTime{true},
+            indicators::option::ForegroundColor{Color::blue},
+            indicators::option::FontStyles{std::vector<FontStyle>{FontStyle::bold}},
+            indicators::option::MaxProgress{epochs}
+    };
 
 
     MatrixXd gradient;
@@ -63,16 +59,16 @@ void Model::train(size_t epochs, double learning_rate) {
             dense_layers[k].forward_prop(dense_layers[k - 1].getAValues());
         }
 
-#ifdef LOGGING
-    accuracy = calc_accuracy(predict_after_forward_prop(), train_labels) * 100;
-    bar.set_option(indicators::option::PrefixText{"DeepDendro epoch: " + std::to_string(i + 1) + out_of_all});
-    bar.tick();
-    bar.set_option(indicators::option::PostfixText{
-            "Loss function: " +
-            std::to_string(lossFunc().categoryCrossEntropy(dense_layers.back().getAValues(), train_labels)) +
-            ", Accuracy: " + std::to_string(accuracy) + "%"});
+        if (verbose) {
+            accuracy = calc_accuracy(predict_after_forward_prop(), train_labels) * 100;
+            bar.set_option(indicators::option::PrefixText{"DeepDendro epoch: " + std::to_string(i + 1) + out_of_all});
+            bar.tick();
+            bar.set_option(indicators::option::PostfixText{
+                    "Loss function: " +
+                    std::to_string(lossFunc().categoryCrossEntropy(dense_layers.back().getAValues(), train_labels)) +
+                    ", Accuracy: " + std::to_string(accuracy) + "%"});
 
-#endif
+        }
 
         // calc back_prop
         gradient = dense_layers.back().calc_first_back_prop(train_labels);

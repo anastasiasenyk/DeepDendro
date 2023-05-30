@@ -13,6 +13,13 @@
 #include <vector>
 
 
+enum ConvSTEPS {
+    NOTHING,
+    FORWARD,
+    CALC_BACKPROP,
+    APPLY_BACKPROP
+};
+
 template<size_t ConvLDimension>
 class ConvLayer {
 protected:
@@ -36,10 +43,12 @@ protected:
 
     ConvLT convolve(const Filter<ConvLDimension> &filter);
 
+    size_t last_step_done = ConvSTEPS::NOTHING;
+
 public:
     ConvLayer(size_t n_filters, Shape filter_shape, activation activ_func, Shape input_shape);
 
-    ConvLT& forward_prop(const ConvLT &input);
+    ConvLT &forward_prop(const ConvLT &input);
 
     ConvLT calc_back_prop(const ConvLT &delta);
 
@@ -88,7 +97,11 @@ ConvLayer<ConvLDimension>::ConvLayer(const size_t n_filters, const Shape filter_
 }
 
 template<size_t ConvLDimension>
-Eigen::Tensor<double, ConvLDimension>& ConvLayer<ConvLDimension>::forward_prop(const ConvLT &input) {
+Eigen::Tensor<double, ConvLDimension> &ConvLayer<ConvLDimension>::forward_prop(const ConvLT &input) {
+    if (!(last_step_done == ConvSTEPS::NOTHING || last_step_done == ConvSTEPS::APPLY_BACKPROP)) {
+        throw std::runtime_error("ConvLayer::forward_prop: last step is not done");
+    }
+
     prev_a_values = input;
 
     ConvLT conv_res;
@@ -105,11 +118,17 @@ Eigen::Tensor<double, ConvLDimension>& ConvLayer<ConvLDimension>::forward_prop(c
         convolved_output.slice(to_combine_start, one_convolved_shape) = conv_res;
         to_combine_start[ConvLDimension - 1] += dim_increment;
     }
+
+    last_step_done = ConvSTEPS::FORWARD;
     return convolved_output;
 }
 
 template<size_t ConvLDimension>
 Eigen::Tensor<double, ConvLDimension> ConvLayer<ConvLDimension>::calc_back_prop(const ConvLT &delta) {
+    if (last_step_done != ConvSTEPS::FORWARD) {
+        throw std::runtime_error("ConvLayer::calc_back_prop: forward_prop must be called before calc_back_prop");
+    }
+
     ConvLT dX;
     dX.resize(prev_a_values.dimensions());
     dX.setZero();
@@ -154,26 +173,34 @@ Eigen::Tensor<double, ConvLDimension> ConvLayer<ConvLDimension>::calc_back_prop(
         dX += dZ_padded.convolve(rotated_filter_weights, dims_to_convolve);
         to_separate_start[ConvLDimension - 1] += dim_increment;
 
-#ifdef DEBUG
-        std::cout << "Iteration " << i << "\n";
-        std::cout << "Delta slice:\n " << delta_piece << "\n";
-        std::cout << "dO_dZ:\n " << dO_dZ << "\n";
-        std::cout << "dZ:\n " << dZ << "\n";
-        std::cout << "dK_grads:\n" <<  dK_grads[i] << "\n";
-        std::cout << "dB_grads:\n" << dB_grads[i] << "\n";
-        std::cout << "dX: \n" << dX << "\n";
-#endif
+//#ifdef DEBUG
+//        std::cout << "Iteration " << i << "\n";
+//        std::cout << "Delta slice:\n " << delta_piece << "\n";
+//        std::cout << "dO_dZ:\n " << dO_dZ << "\n";
+//        std::cout << "dZ:\n " << dZ << "\n";
+//        std::cout << "dK_grads:\n" << dK_grads[i] << "\n";
+//        std::cout << "dB_grads:\n" << dB_grads[i] << "\n";
+//        std::cout << "dX: \n" << dX << "\n";
+//#endif
 
     }
+
+    last_step_done = ConvSTEPS::CALC_BACKPROP;
     return dX * (1. / filters.size());
 }
 
 
 template<size_t ConvLDimension>
 void ConvLayer<ConvLDimension>::apply_back_prop(const double learning_rate) {
+    if (last_step_done != ConvSTEPS::CALC_BACKPROP) {
+        throw std::runtime_error("ConvLayer::apply_back_prop: calc_back_prop must be called before apply_back_prop");
+    }
+
     for (size_t i = 0; i < filters.size(); ++i) {
         filters[i].update_weights(dK_grads[i], dB_grads[i], learning_rate);
     }
+
+    last_step_done = ConvSTEPS::APPLY_BACKPROP;
 }
 
 template<size_t ConvLDimension>
