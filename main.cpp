@@ -11,6 +11,7 @@
 #include "HiddenLayer.h"
 #include <tbb/parallel_invoke.h>
 #include <thread>
+#include "PipelineModel.h"
 
 
 int main() {
@@ -21,31 +22,12 @@ int main() {
 //
 //    DataSets data = mnistProcessTrain.getData(pathToMNIST);
 
+    tbb::concurrent_queue<std::pair<MatrixXd, MatrixXd>> miniBatchQ;
+    mnistProcessTrain.enqueueMiniBatches(32, miniBatchQ, pathToMNIST);
 
-    HiddenLayer hiddenLayer1(16, {784, 32}, find_activation_func(activation::relu));
-    HiddenLayer hiddenLayer2(8, hiddenLayer1.shape, find_activation_func(activation::relu));
-    HiddenLayer hiddenLayer3(10, hiddenLayer2.shape, find_activation_func(activation::softmax));
-
-
-
-
-    FirstWorker worker1(1, hiddenLayer1);
-    Worker worker2(2, hiddenLayer2, 7500);
-    LastWorker worker3(3, hiddenLayer3, 7500);
-    tbb::task_group tg;
-    for (int i = 0; i < 1; ++i) {
-        tbb::concurrent_queue<std::pair<MatrixXd, MatrixXd>> mainQ;
-        mnistProcessTrain.enqueueMiniBatches(32, mainQ, pathToMNIST);
-        tg.run([&] { worker1(8, mainQ, worker2.activationsQ, 25, 0.05); });
-        tg.run([&] { worker2(worker3.activationsQ, worker1.deltaWQ, worker1.gradients_pushed_w1, 25, 0.05); });
-        tg.run([&] { worker3(worker2.deltaWQ, worker2.gradients_pushed_w2, 0.05); });
-        tg.wait();
-        std::cout << "======================\n";
-        mnistProcessTrain.reset();
-    }
-
-
-
+    std::cout << miniBatchQ.unsafe_size() << std::endl;
+    PipelineModel pipelineModel(8);
+    pipelineModel.run_pipeline(miniBatchQ);
 
 
 //    Model model;

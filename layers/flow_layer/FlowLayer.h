@@ -77,11 +77,11 @@ public:
         return calc_gradient();
     }
 
-    MatrixXd calc_first_back_prop(const MatrixXd &labels) {
-        dz_value = a_value - labels;
-        dz_values.emplace_back(dz_value); // store for weight updates
-        return calc_gradient();
-    }
+//    MatrixXd calc_first_back_prop(const MatrixXd &labels) {
+//        dz_value = a_value - labels;
+//        dz_values.emplace_back(dz_value); // store for weight updates
+//        return calc_gradient();
+//    }
 
     void update_weights(double learning_rate) {
         // Only update weights every m micro-batches

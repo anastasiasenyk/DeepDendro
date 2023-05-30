@@ -18,7 +18,7 @@ class FirstWorker {
     std::vector<MatrixXd> zValuesContainer;
     std::vector<MatrixXd> activationsContainer;
 public:
-    std::atomic<size_t> gradients_pushed = 0;
+    std::atomic<size_t> gradients_pushed_w1 = 0;
     tbb::concurrent_queue<MatrixXd> deltaWQ;
 
     FirstWorker(int worker_id, HiddenLayer &layer) : worker_id_(worker_id), layer_(layer) {}
@@ -40,9 +40,7 @@ public:
                     std::cout << worker_id_ << ": received poison pill\n";
 #endif
                 } else {
-#ifdef DEBUG
-                    std::cout << worker_id_ << ": got minibatch\n";
-#endif
+
                     // divide into microbatches, and start the pipeline by
                     // calculating forward prop for the first microbatch
                     // and push its result to nextActivations
@@ -60,14 +58,14 @@ public:
                         zValuesContainer.emplace_back(layer_.getZValues());
                         nextActivations.push(std::make_pair(layer_.getAValues(), microbatchLabels));
 #ifdef DEBUG
-                        std::cout << worker_id_ << ": pushed microbatch \n";
+                        std::cout << worker_id_ << ": forward \n";
 #endif
                     }
                     batches_processed++;
                     if (batches_processed == update_after) {
 
                         // wait for pipeline to process all the given batches
-                        while (gradients_pushed != update_after * (batch.first.cols() / microbatch_size)) {
+                        while (gradients_pushed_w1 != update_after * (batch.first.cols() / microbatch_size)) {
 //                            std::cout << "Gradients received: " << deltaWQ.unsafe_size() << "\n";
                         }
                         // push so-called poison pill to start weights update
@@ -77,12 +75,16 @@ public:
                                                              layer_.getWeightsShape().second);
                         MatrixXd resBiases = MatrixXd::Zero(layer_.getBiasesShape().first,
                                                             layer_.getBiasesShape().second);
-                        for (int i = 0; i < gradients_pushed; ++i) {
+                        for (int i = 0; i < gradients_pushed_w1; ++i) {
                             if (deltaWQ.try_pop(gradient)) {
-                                layer_.setZValues(zValuesContainer.back());
-                                zValuesContainer.pop_back();
+                                layer_.setZValues(zValuesContainer.front());
+                                zValuesContainer.erase(zValuesContainer.begin());
                                 gradient = layer_.calc_back_prop(gradient);
-                                layer_.apply_back_prop(learning_rate, activationsContainer[i]);
+#ifdef DEBUG
+                                std::cout << worker_id_ << ": backward \n";
+#endif
+                                layer_.apply_back_prop(learning_rate, activationsContainer.front());
+                                activationsContainer.erase(activationsContainer.begin());
                                 resWeights += layer_.getWeights();
                                 resBiases += layer_.getBiases();
                             } else {
@@ -93,8 +95,8 @@ public:
                             }
                         }
                         // synchronize weights and biases through number of processed micro-batches
-                        resWeights /= gradients_pushed;
-                        resBiases /= gradients_pushed;
+                        resWeights /= gradients_pushed_w1;
+                        resBiases /= gradients_pushed_w1;
                         layer_.setWeights(resWeights);
                         layer_.setBiases(resBiases);
                         if (resWeights == MatrixXd::Zero(resWeights.rows(), resWeights.cols())) {
@@ -108,11 +110,9 @@ public:
                         std::cout << worker_id_ << ": WEIGHTS UPDATED\n" << std::endl;
 #endif
 
-                        activationsContainer.clear();
-
 
                         batches_processed = 0;
-                        gradients_pushed = 0;
+                        gradients_pushed_w1 = 0;
                     }
                 }
             }

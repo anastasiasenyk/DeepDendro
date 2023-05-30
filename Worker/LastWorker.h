@@ -26,9 +26,6 @@ public:
                                                                           batch_size(num_microbatches) {}
 
     void operator()(concurrent_queue<MatrixXd> &prevDeltaW, std::atomic<size_t> &gp, double learning_rate) {
-#ifdef DEBUG
-        std::cout << worker_id_ << ": Starting.... \n";
-#endif
         int processed = 0;
         std::pair<MatrixXd, MatrixXd> activations;
         MatrixXd gradient;
@@ -37,7 +34,6 @@ public:
             // TODO: numUpdates == 75 - magic number, change!
             if (processed == batch_size && numUpdates == 75) {
 #ifdef DEBUG
-                std::cout << worker_id_ << ": " << processed <<"\n";
                 std::cout << worker_id_ << ": DONE! \n";
 #endif
                 break;
@@ -50,9 +46,10 @@ public:
                     MatrixXd resBiases = MatrixXd::Zero(layer_.getBiasesShape().first, layer_.getBiasesShape().second);
                     int toUpdate = dzContainer.size();
                     for (int i = 0; i < toUpdate; ++i) {
-                        layer_.setDelta(dzContainer.back());
-                        dzContainer.pop_back();
-                        layer_.apply_back_prop(learning_rate, activationsContainer[i]);
+                        layer_.setDelta(dzContainer.front());
+                        dzContainer.erase(dzContainer.begin());
+                        layer_.apply_back_prop(learning_rate, activationsContainer.front());
+                        activationsContainer.erase(activationsContainer.begin());
                         resWeights += layer_.getWeights();
                         resBiases += layer_.getBiases();
                     }
@@ -61,27 +58,29 @@ public:
                     numUpdates++;
                     layer_.setWeights(resWeights);
                     layer_.setBiases(resBiases);
-                    activationsContainer.clear();
-                    std::cout << "UPDATED LAST\n";
+//                    activationsContainer.clear();
+#ifdef DEBUG
+                    std::cout << worker_id_ << ": WEIGHTS UPDATED \n";
+#endif
                 } else if (processed < batch_size) {
                     // it's not a poison pill, so process it
-#ifdef DEBUG
-                    std::cout << worker_id_ << ": got activations \n";
-#endif
-                    activationsContainer.emplace_back(activations.first);
 
                     layer_.forward_prop(activations.first);
+                    activationsContainer.emplace_back(activations.first);
+#ifdef DEBUG
+                    std::cout << worker_id_ << ": forward \n";
+#endif
 
                     std::cout << lossFunc().categoryCrossEntropy(layer_.getAValues(), activations.second) << "\n";
 
                     gradient = layer_.calc_first_back_prop(activations.second);
+                    dzContainer.emplace_back(layer_.getDelta());
                     prevDeltaW.push(gradient);
                     gp++;
                     // for weights update
-                    dzContainer.emplace_back(layer_.getDelta());
                     processed++;
 #ifdef DEBUG
-                    std::cout << worker_id_ << ": computed gradient, pushed it \n";
+                    std::cout << worker_id_ << ": backward \n";
 
 #endif
                 }
