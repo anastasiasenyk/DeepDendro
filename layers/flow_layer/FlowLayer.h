@@ -10,6 +10,7 @@
 #include <tbb/concurrent_queue.h>
 #include <atomic>
 #include <queue>
+#include <iostream>
 #include "Layer.h"
 #include "activationFuncs.h"
 #include "activationDerivative.h"
@@ -30,6 +31,7 @@ class FlowLayer : public Layer {
     std::queue<MatrixXd> received_activations; // for weight update.
 
     size_t update_after;
+    std::mutex mtx;
 protected:
 
     std::atomic<size_t> micro_batch_num_forw;
@@ -51,14 +53,25 @@ public:
         shape.second = input_shape.second;
     }
 
-    virtual void forward_prop(const MatrixXd &prev_a_values) {
+    virtual void forward_prop(const MatrixXd &prev_a_values, bool is_first=false) {
+        std::lock_guard<std::mutex> lock(mtx);
         // save received activations for weight update
         received_activations.push(prev_a_values);
 
         // always use the latest version of weights for forward prop
         z_value = weight_stash.back() * prev_a_values;
+
+//        if(is_first) std::cout << weight_stash.back().rows() << " " << weight_stash.back().cols() << " | " << prev_a_values.rows() << " " << prev_a_values.cols() << " | " << z_value.rows() << " " << z_value.cols() << " | " << bias_stash.back().rows() << " " << bias_stash.back().cols() <<"\n";
+//        std::atomic_thread_fence(std::memory_order_seq_cst);
         z_value.colwise() += bias_stash.back();
         z_values.emplace(z_value); // store for backprop
+        if (is_first) {
+            for (int i = 0; i < bias_stash[0].size(); ++i) {
+                std::cout << bias_stash[bias_stash.size()-1][i] << " ";
+            }
+            std::cout << "\n";
+        }
+
         a_value = activ_func(z_value);
 
         // stash weights
@@ -71,6 +84,7 @@ public:
     }
 
     MatrixXd back_prop (const MatrixXd &gradient) {
+        std::lock_guard<std::mutex> lock(mtx);
         // there's no way, one micro-batch overtakes another,
         // so their backprop will be calculated in the same order as forward prop
         // therefore, queue is the best choice here
@@ -89,12 +103,14 @@ public:
 //    }
 
     void update_weights(double learning_rate) {
+        std::lock_guard<std::mutex> lock(mtx);
         // Only update weights every m micro-batches
 
         MatrixXd res_weights = MatrixXd::Zero(dz_values.front().rows(), dz_values.front().cols());
         VectorXd res_biases = VectorXd::Zero(dz_values.front().rows());
 
         // Compute the average of the gradients over m micro-batches
+        MatrixXd temp;
         for (int i = 0; i < update_after; ++i) {
             res_weights += dz_values[i];
             res_biases += dz_values[i].rowwise().sum();  // Bias gradient is the sum across the columns
@@ -105,10 +121,13 @@ public:
         // Perform the weight and bias updates using the average gradients
         // todo: run across the weights version used for current m micro-batches and delete those
         // weights from the weight_stash, as they require a lot of space
-        weight_stash.back() -= learning_rate * res_weights * received_activations.front().transpose();
-        bias_stash.back() -= learning_rate * res_biases;
+        MatrixXd tmp = weight_stash.back() - learning_rate * res_weights * received_activations.front().transpose();
+        MatrixXd tmp2 = bias_stash.back() - learning_rate * res_biases;
+//        weight_stash.back() -= learning_rate * res_weights * received_activations.front().transpose();
+        weight_stash.emplace_back(tmp);
+//        bias_stash.back() -= learning_rate * res_biases;
+        bias_stash.emplace_back(tmp2);
         received_activations.pop(); // you need to pop the used activations as well
-
         // Remove the used gradients
         dz_values.erase(dz_values.begin(), dz_values.begin() + update_after);
     }

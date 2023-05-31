@@ -11,6 +11,7 @@
 #include "FlowLayer.h"
 #include "FlowOutputLayer.h"
 #include "SourceNode/MicrobatchSourceBody.h"
+#include "MNISTProcess.h"
 
 
 class PipelineModel {
@@ -38,16 +39,16 @@ class PipelineModel {
     }
 public:
     PipelineModel(int micro_batch_size): microbatch_size(micro_batch_size) {
-        outputLayer = std::make_shared<FlowOutputLayer>(10, Shape(8, 8), find_activation_func(softmax), 4);
+        outputLayer = std::make_shared<FlowOutputLayer>(10, Shape(8, 8), find_activation_func(softmax), 25);
     };
 
     void run_pipeline(tbb::concurrent_queue<std::pair<MatrixXd, MatrixXd>> &queue) {
         size_t microBatchCounter1 = 0;
         double learning_rate = 0.001;
 
-        FlowLayer flowLayer1(16, {784, 8}, find_activation_func(relu), 4);
+        FlowLayer flowLayer1(16, {784, 8}, find_activation_func(relu), 25);
 
-        FlowLayer flowLayer2(8, {16, 8}, find_activation_func(relu), 4);
+        FlowLayer flowLayer2(8, {16, 8}, find_activation_func(relu), 25);
 
         tbb::flow::function_node<bool, bool> weight_update1( g, tbb::flow::unlimited, [learning_rate, &flowLayer1, this](bool m) -> bool {
             std::lock_guard<std::mutex> lock(mtx7);
@@ -77,29 +78,25 @@ public:
             [this, &body](tbb::flow_control &fc) -> MatrixXd {
                 std::pair<MatrixXd, MatrixXd> microbatch;
                 if (body(microbatch)) {
-                    this->outputLayer->set_labels(microbatch.second);
                     if (microbatch.first.cols() == 1 && microbatch.first.rows() == 1 && microbatch.first(0, 0) == -1.0 &&
                             microbatch.second.cols() == 1 && microbatch.second.rows() == 1 && microbatch.second(0, 0) == -1.0) {
                         fc.stop();
+                    }else {
+                        this->outputLayer->set_labels(microbatch.second);
                     }
                     return microbatch.first;
                 }
             });
 
 
-        tbb::flow::function_node<MatrixXd, MatrixXd> func1( g, tbb::flow::unlimited, [this, &flowLayer1, &microBatchCounter1, &weight_update1]( MatrixXd m ) -> MatrixXd {
+        tbb::flow::function_node<MatrixXd, MatrixXd> func1( g, tbb::flow::unlimited, [this, &flowLayer1]( MatrixXd m ) -> MatrixXd {
             if (m.cols() == 1 && m.rows() == 1 && m(0, 0) == -1.0) {
                 return m; // Return immediately poison pill
             }
             std::lock_guard<std::mutex> lock(mtx1);
-            microBatchCounter1++;
-            if (microBatchCounter1 == 25) {
-//                std::cout << "func1 sending true to weight_update1\n";
-                microBatchCounter1 = 0;
-                weight_update1.try_put(true);
-            }
+
 //            std::cout << "func1 receiving a_value from input\n";
-            flowLayer1.forward_prop(m);
+            flowLayer1.forward_prop(m, true);
             return flowLayer1.getAValue();
         } );
 
@@ -145,19 +142,24 @@ public:
             return grad;
         } );
 
-        tbb::flow::function_node<MatrixXd, MatrixXd > back_func1( g, tbb::flow::unlimited, [this, &flowLayer1]( MatrixXd m ) -> MatrixXd {
+        tbb::flow::function_node<MatrixXd, MatrixXd > back_func1( g, tbb::flow::unlimited, [this, &flowLayer1, &microBatchCounter1, &weight_update1]( MatrixXd m ) -> MatrixXd {
             if (m.cols() == 1 && m.rows() == 1 && m(0, 0) == -1.0) {
                 return m; // Return immediately poison pill
             }
             std::lock_guard<std::mutex> lock(mtx6);
-//            std::cout << "back_prop1 receiving a_value from back_prop2\n";
             MatrixXd grad = flowLayer1.back_prop(m);
+            microBatchCounter1++;
+            if (microBatchCounter1 == 25) {
+//                std::cout << "func1 sending true to weight_update1\n";
+                microBatchCounter1 = 0;
+                weight_update1.try_put(true);
+            }
+//            std::cout << "back_prop1 receiving a_value from back_prop2\n";
             return grad;
         } );
 
 
 
-        input.activate();
         make_edge( input, func1 );
         make_edge( func1, func2 );
         make_edge( func2, func3 );
@@ -166,7 +168,17 @@ public:
         make_edge( back_func2, back_func1 );
         make_edge( weight_update1, weight_update2 );
         make_edge( weight_update2, weight_update3 );
-        g.wait_for_all();
+        for (int i = 0; i < 1; ++i) {
+            std::cout << "Epoch: " << i << "\n";
+            input.activate();
+            g.wait_for_all();
+            g.reset();
+            MNISTProcess mnistProcessTrain = MNISTProcess();
+            std::string pathToMNIST = "../MNIST_ORG";
+            mnistProcessTrain.enqueueMiniBatches(32, queue, pathToMNIST);
+        }
+//        input.activate();
+//        g.wait_for_all();
     }
 };
 

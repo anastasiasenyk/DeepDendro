@@ -17,7 +17,7 @@ public:
             FlowLayer(curr_neurons, input_shape, activation, update_num)
     { }
 
-    void forward_prop(const MatrixXd &prev_a_values) override {
+    void forward_prop(const MatrixXd &prev_a_values, bool is_first=false) override {
         FlowLayer::forward_prop(prev_a_values);
         a_value_stash[micro_batch_num_forw] = a_value;
     }
