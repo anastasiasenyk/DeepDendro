@@ -55,22 +55,28 @@ public:
 
     virtual void forward_prop(const MatrixXd &prev_a_values, bool is_first=false) {
         std::lock_guard<std::mutex> lock(mtx);
+
         // save received activations for weight update
         received_activations.push(prev_a_values);
 
         // always use the latest version of weights for forward prop
         z_value = weight_stash.back() * prev_a_values;
+//        for (int i = 0; i < weight_stash.back().rows(); ++i) {
+//            for (int j = 0; j <weight_stash.back().cols(); ++j) {
+//                std::cout << weight_stash.back()(i, j) << " ";
+//            }
+//            std::cout << "\n";
+//        }
 
 //        if(is_first) std::cout << weight_stash.back().rows() << " " << weight_stash.back().cols() << " | " << prev_a_values.rows() << " " << prev_a_values.cols() << " | " << z_value.rows() << " " << z_value.cols() << " | " << bias_stash.back().rows() << " " << bias_stash.back().cols() <<"\n";
-//        std::atomic_thread_fence(std::memory_order_seq_cst);
         z_value.colwise() += bias_stash.back();
         z_values.emplace(z_value); // store for backprop
-        if (is_first) {
-            for (int i = 0; i < bias_stash[0].size(); ++i) {
-                std::cout << bias_stash[bias_stash.size()-1][i] << " ";
-            }
-            std::cout << "\n";
-        }
+//        if (is_first) {
+//            for (int i = 0; i < bias_stash[0].size(); ++i) {
+//                std::cout << bias_stash[bias_stash.size()-1][i] << " ";
+//            }
+//            std::cout << "\n";
+//        }
 
         a_value = activ_func(z_value);
 

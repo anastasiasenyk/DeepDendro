@@ -82,6 +82,13 @@ public:
                             microbatch.second.cols() == 1 && microbatch.second.rows() == 1 && microbatch.second(0, 0) == -1.0) {
                         fc.stop();
                     }else {
+//                        if (!counter){
+//                            MatrixXd firstImage = microbatch.first.col(0);
+//                            Eigen::Map<MatrixXd> reshapedFirstImage(firstImage.data(), 28, 28);
+//                            std::cout << "First image:\n" << reshapedFirstImage << std::endl;
+//                            std::cout << "First label:\n" << microbatch.second.col(0) << std::endl;
+//                        }
+//                        counter++;
                         this->outputLayer->set_labels(microbatch.second);
                     }
                     return microbatch.first;
