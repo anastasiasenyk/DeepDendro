@@ -41,6 +41,7 @@ protected:
     MatrixXd a_value;
 public:
     const MatrixXd &getAValue() const {
+
         return a_value;
     }
 
@@ -53,7 +54,7 @@ public:
         shape.second = input_shape.second;
     }
 
-    virtual void forward_prop(const MatrixXd &prev_a_values, bool is_first=false) {
+    virtual MatrixXd forward_prop(const MatrixXd &prev_a_values, bool is_first=false) {
         std::lock_guard<std::mutex> lock(mtx);
 
         // save received activations for weight update
@@ -61,28 +62,18 @@ public:
 
         // always use the latest version of weights for forward prop
         z_value = weight_stash.back() * prev_a_values;
-//        for (int i = 0; i < weight_stash.back().rows(); ++i) {
-//            for (int j = 0; j <weight_stash.back().cols(); ++j) {
-//                std::cout << weight_stash.back()(i, j) << " ";
-//            }
-//            std::cout << "\n";
-//        }
-
-//        if(is_first) std::cout << weight_stash.back().rows() << " " << weight_stash.back().cols() << " | " << prev_a_values.rows() << " " << prev_a_values.cols() << " | " << z_value.rows() << " " << z_value.cols() << " | " << bias_stash.back().rows() << " " << bias_stash.back().cols() <<"\n";
+        std::cout << "used for forw: " << weight_stash.size() << "\n";
         z_value.colwise() += bias_stash.back();
+
         z_values.emplace(z_value); // store for backprop
-//        if (is_first) {
-//            for (int i = 0; i < bias_stash[0].size(); ++i) {
-//                std::cout << bias_stash[bias_stash.size()-1][i] << " ";
-//            }
-//            std::cout << "\n";
-//        }
 
         a_value = activ_func(z_value);
 
         // stash weights
         stash_map[micro_batch_num_forw++] = weight_stash.size()-1;
-
+        std::cout << "stored for forw after: " << weight_stash.size() << "\n";
+        std::cout << "=========================\n";
+        return a_value;
     }
 
     inline MatrixXd calc_gradient() {
@@ -102,15 +93,10 @@ public:
         }
     }
 
-//    MatrixXd calc_first_back_prop(const MatrixXd &labels) {
-//        dz_value = a_value - labels;
-//        dz_values.emplace_back(dz_value); // store for weight updates
-//        return calc_gradient();
-//    }
-
-    void update_weights(double learning_rate) {
+    void update_weights(double learning_rate, int id=1) {
         std::lock_guard<std::mutex> lock(mtx);
         // Only update weights every m micro-batches
+        std::cout << "dz_values size: " << dz_values.size() << " | " << id << std::endl;
 
         MatrixXd res_weights = MatrixXd::Zero(dz_values.front().rows(), dz_values.front().cols());
         VectorXd res_biases = VectorXd::Zero(dz_values.front().rows());
@@ -133,9 +119,11 @@ public:
         weight_stash.emplace_back(tmp);
 //        bias_stash.back() -= learning_rate * res_biases;
         bias_stash.emplace_back(tmp2);
-        received_activations.pop(); // you need to pop the used activations as well
         // Remove the used gradients
         dz_values.erase(dz_values.begin(), dz_values.begin() + update_after);
+        for (int i = 0; i < update_after; ++i) {
+            received_activations.pop();
+        }
     }
 
 };

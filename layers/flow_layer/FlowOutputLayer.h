@@ -18,10 +18,11 @@ public:
             FlowLayer(curr_neurons, input_shape, activation, update_num)
     { }
 
-    void forward_prop(const MatrixXd &prev_a_values, bool is_first=false) override {
+    MatrixXd forward_prop(const MatrixXd &prev_a_values, bool is_first=false) override {
         std::lock_guard<std::mutex> lock(mtx);
-        FlowLayer::forward_prop(prev_a_values);
-        a_value_stash[micro_batch_num_forw] = a_value;
+        MatrixXd temp = FlowLayer::forward_prop(prev_a_values);
+        a_value_stash[micro_batch_num_forw] = temp;
+        return temp;
     }
 
     MatrixXd calc_first_back_prop(const MatrixXd &prev_a_values)  {
