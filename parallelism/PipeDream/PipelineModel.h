@@ -53,21 +53,21 @@ public:
         FlowLayer flowLayer2(8, {16, 8}, find_activation_func(relu), 8);
 
         tbb::flow::function_node<bool, bool> weight_update1( g, tbb::flow::unlimited, [learning_rate, &flowLayer1, this](bool m) -> bool {
-            std::lock_guard<std::mutex> lock(mtx7);
+//            std::lock_guard<std::mutex> lock(mtx7);
 //             std::cout << "weight_update1 \n";
             flowLayer1.update_weights(learning_rate, 1);
             return true;
         } );
 
         tbb::flow::function_node<bool, bool> weight_update2( g, tbb::flow::unlimited, [learning_rate, &flowLayer2, this](bool m) -> bool {
-            std::lock_guard<std::mutex> lock(mtx8);
+//            std::lock_guard<std::mutex> lock(mtx8);
 //             std::cout << "weight_update2 \n";
             flowLayer2.update_weights(learning_rate, 2);
             return true;
         } );
 
         tbb::flow::function_node<bool, bool> weight_update3( g, tbb::flow::unlimited, [learning_rate, this](bool m) -> bool {
-            std::lock_guard<std::mutex> lock(mtx9);
+//            std::lock_guard<std::mutex> lock(mtx9);
 //             std::cout << "weight_update3 \n";
             outputLayer->update_weights(learning_rate, 3);
             return true;
@@ -95,7 +95,7 @@ public:
             if (m.cols() == 1 && m.rows() == 1 && m(0, 0) == -1.0) {
                 return m; // Return immediately poison pill
             }
-            std::lock_guard<std::mutex> lock(mtx1);
+//            std::lock_guard<std::mutex> lock(mtx1);
 
 //            std::cout << "func1 receiving a_value from input\n";
             return flowLayer1.forward_prop(m, true);
@@ -108,7 +108,7 @@ public:
             if (m.cols() == 1 && m.rows() == 1 && m(0, 0) == -1.0) {
                 return m; // Return immediately poison pill
             }
-            std::lock_guard<std::mutex> lock(mtx2);
+//            std::lock_guard<std::mutex> lock(mtx2);
 //            std::cout << "func2 receiving a_value from func1\n";
             return flowLayer2.forward_prop(m);
 //            return flowLayer2.getAValue();
@@ -119,7 +119,7 @@ public:
             if (m.cols() == 1 && m.rows() == 1 && m(0, 0) == -1.0) {
                 return m; // Return immediately poison pill
             }
-            std::lock_guard<std::mutex> lock(mtx3);
+//            std::lock_guard<std::mutex> lock(mtx3);
 //            std::cout << "func3 receiving a_value from func2\n";
             return this->outputLayer->forward_prop(m);
 //            return outputLayer->getAValue();
