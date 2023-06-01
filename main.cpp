@@ -22,13 +22,15 @@ int main() {
 //
 //    DataSets data = mnistProcessTrain.getData(pathToMNIST);
 
-    tbb::concurrent_queue<std::pair<MatrixXd, MatrixXd>> miniBatchQ;
-    mnistProcessTrain.enqueueMiniBatches(32, miniBatchQ, pathToMNIST);
+//    tbb::concurrent_queue<std::pair<MatrixXd, MatrixXd>> miniBatchQ;
+//    mnistProcessTrain.enqueueMiniBatches(32, miniBatchQ, pathToMNIST);
 
-    std::cout << miniBatchQ.unsafe_size() << std::endl;
+//    std::cout << miniBatchQ.unsafe_size() << std::endl;
     PipelineModel pipelineModel(8);
-    pipelineModel.run_pipeline(miniBatchQ);
-
+    pipelineModel.addLayer(16, {784, 8}, relu, 8);
+    pipelineModel.addLayer(8, {16, 8}, relu, 8);
+//    pipelineModel.run_pipeline(miniBatchQ);
+    pipelineModel.runConfPipeline();
 
 //    Model model;
 //    model.addInput(data.trainData);
