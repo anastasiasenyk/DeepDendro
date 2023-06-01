@@ -4,12 +4,7 @@
 
 #include "Model.h"
 #include "MNISTProcess.h"
-#include "inter_model.h"
-#include "FirstWorker.h"
-#include "Worker.h"
-#include "LastWorker.h"
 #include "HiddenLayer.h"
-#include <tbb/parallel_invoke.h>
 #include <thread>
 #include "PipelineModel.h"
 

@@ -18,6 +18,7 @@ class PipelineModel {
     int microbatch_size;
     std::vector<std::shared_ptr<FlowLayer>> layers;
     std::shared_ptr<FlowOutputLayer> outputLayer;
+    std::string pathToData;
     tbb::flow::graph g;
     std::mutex mtx4;
     std::mutex mtx5;
@@ -38,7 +39,7 @@ class PipelineModel {
         return layers[layerIndex]->back_prop(gradient);
     }
 public:
-    PipelineModel(int micro_batch_size, double lr=0.005): microbatch_size(micro_batch_size), learning_rate(lr){
+    PipelineModel(int micro_batch_size=8, double lr=0.005, const std::string& path = "../MNIST_ORG"): microbatch_size(micro_batch_size), learning_rate(lr), pathToData(path){
         outputLayer = std::make_shared<FlowOutputLayer>(10, Shape(8, 8), find_activation_func(softmax), 8);
     };
 
@@ -50,13 +51,11 @@ public:
     void runConfPipeline() {
 
         MNISTProcess mnistProcessTrain = MNISTProcess();
-        // TODO: Change path to be a parameter or member variable
-        std::string pathToMNIST = "../MNIST_ORG";
-        TrainingSet data = mnistProcessTrain.getTrainingData(pathToMNIST);
+        TrainingSet data = mnistProcessTrain.getTrainingData(pathToData);
         tbb::concurrent_queue<std::pair<MatrixXd, MatrixXd>> queue;
         // TODO: minibatch size have to be a parameter
         // TODO: divide into microbatches initially
-        mnistProcessTrain.enqueueMiniBatchesFromMemory(32, queue, data.trainData, data.trainLabels);
+        mnistProcessTrain.enqueueMiniBatchesFromMemory(microbatch_size, queue, data.trainData, data.trainLabels);
 
         MicrobatchSourceBody body(queue, microbatch_size);
 
@@ -148,7 +147,7 @@ public:
             input.activate();
             g.wait_for_all();
             g.reset();
-            mnistProcessTrain.enqueueMiniBatchesFromMemory(32, queue, data.trainData, data.trainLabels);  // Use in-memory data
+            mnistProcessTrain.enqueueMiniBatchesFromMemory(microbatch_size, queue, data.trainData, data.trainLabels);  // Use in-memory data
         }
 
 
