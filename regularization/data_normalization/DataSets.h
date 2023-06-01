@@ -15,3 +15,13 @@ struct DataSets {
     MatrixXd trainData;
     MatrixXd trainLabels;
 } ;
+
+struct TrainingSet {
+    MatrixXd trainData;
+    MatrixXd trainLabels;
+};
+
+struct TestSet {
+    MatrixXd testData;
+    MatrixXd testLabels;
+};

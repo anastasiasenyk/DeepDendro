@@ -46,9 +46,10 @@ public:
         size_t microBatchCounter1 = 0;
         size_t microBatchCounter2 = 0;
         size_t microBatchCounter3 = 0;
-        double learning_rate = 0.001;
+        double learning_rate = 0.005;
 
         FlowLayer flowLayer1(16, {784, 8}, find_activation_func(relu), 8);
+
         FlowLayer flowLayer2(8, {16, 8}, find_activation_func(relu), 8);
 
         tbb::flow::function_node<bool, bool> weight_update1( g, tbb::flow::unlimited, [learning_rate, &flowLayer1, this](bool m) -> bool {
@@ -182,14 +183,17 @@ public:
         make_edge( back_func2, back_func1 );
 //        make_edge( weight_update1, weight_update2 );
 //        make_edge( weight_update2, weight_update3 );
-        for (int i = 0; i < 100; ++i) {
+
+        MNISTProcess mnistProcessTrain = MNISTProcess();
+        std::string pathToMNIST = "../MNIST_ORG";
+        TrainingSet data = mnistProcessTrain.getTrainingData(pathToMNIST);
+
+        for (int i = 0; i < 10; ++i) {
             std::cout << "Epoch: " << i << "\n";
             input.activate();
             g.wait_for_all();
             g.reset();
-            MNISTProcess mnistProcessTrain = MNISTProcess();
-            std::string pathToMNIST = "../MNIST_ORG";
-            mnistProcessTrain.enqueueMiniBatches(32, queue, pathToMNIST);
+            mnistProcessTrain.enqueueMiniBatchesFromMemory(32, queue, data.trainData, data.trainLabels);  // Use in-memory data
         }
 //        input.activate();
 //        g.wait_for_all();

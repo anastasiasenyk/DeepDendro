@@ -62,7 +62,6 @@ public:
 
         // always use the latest version of weights for forward prop
         z_value = weight_stash.back() * prev_a_values;
-        std::cout << "used for forw: " << weight_stash.size() << "\n";
         z_value.colwise() += bias_stash.back();
 
         z_values.emplace(z_value); // store for backprop
@@ -71,8 +70,6 @@ public:
 
         // stash weights
         stash_map[micro_batch_num_forw++] = weight_stash.size()-1;
-        std::cout << "stored for forw after: " << weight_stash.size() << "\n";
-        std::cout << "=========================\n";
         return a_value;
     }
 
@@ -96,7 +93,7 @@ public:
     void update_weights(double learning_rate, int id=1) {
         std::lock_guard<std::mutex> lock(mtx);
         // Only update weights every m micro-batches
-        std::cout << "dz_values size: " << dz_values.size() << " | " << id << std::endl;
+//        std::cout << "dz_values size: " << dz_values.size() << " | " << id << std::endl;
 
         MatrixXd res_weights = MatrixXd::Zero(dz_values.front().rows(), dz_values.front().cols());
         VectorXd res_biases = VectorXd::Zero(dz_values.front().rows());

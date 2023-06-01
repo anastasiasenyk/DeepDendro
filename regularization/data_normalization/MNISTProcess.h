@@ -30,6 +30,12 @@ public:
 
     DataSets getData(std::string& pathToMNIST);
 
+    TrainingSet getTrainingData(std::string& pathToMNIST);
+
+    TestSet getTestingData(std::string& pathToMNIST);
+
+    void enqueueMiniBatchesFromMemory(int batchSize, tbb::concurrent_queue<std::pair<MatrixXd, MatrixXd>> &queue, MatrixXd& trainData, MatrixXd& trainLabels);
+
     void enqueueMiniBatches(int batchSize, tbb::concurrent_queue<std::pair<MatrixXd, MatrixXd>> &queue, std::string& pathToMNIST);
 
     void reset();

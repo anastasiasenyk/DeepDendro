@@ -3,8 +3,6 @@
 //
 
 #include "MicrobatchSourceBody.h"
-#include <Eigen/Dense>
-#include <iostream>
 
 MicrobatchSourceBody::MicrobatchSourceBody(tbb::concurrent_queue<std::pair<MatrixXd, MatrixXd>> &minibatchQueue,
                                            int microbatchSize)
