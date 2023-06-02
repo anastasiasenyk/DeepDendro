@@ -19,13 +19,13 @@ class HiddenLayer : public Layer {
     ActivationFunc<MatrixXd> activ_func;
     ActivationFunc<MatrixXd> activ_func_derivative;
 
+    MatrixXd calc_gradient();
+
 public:
     MShape shape;
     HiddenLayer(int curr_neurons, MShape prev_shape, activation type);
 
     void forward_prop(const MatrixXd &prev_a_values);
-
-    MatrixXd calc_gradient();
 
     MatrixXd calc_first_back_prop(const MatrixXd &labels);
 

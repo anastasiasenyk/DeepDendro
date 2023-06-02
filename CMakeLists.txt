@@ -12,8 +12,11 @@ add_executable(DeepDendro
         evaluation_metrics/accuracy.cpp
         layers/hidden_layer/HiddenLayer.cpp
         layers/conv_layer/Convolutions.cpp
+        layers/conv_layer/Filter.cpp
         layers/conv_layer/Pooling.cpp
+
         loss_functions/lossFunc.cpp
+
 
         model/Model.cpp
         model_management/recreate_model/recreate_model.cpp

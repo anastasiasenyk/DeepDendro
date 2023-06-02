@@ -19,4 +19,17 @@ Eigen::Tensor<double, Dimension> Tensor_ReLU_Derivative(const Eigen::Tensor<doub
     return tensor.unaryExpr([](double x) { return static_cast<double>(x > 0); });
 }
 
+template<size_t Dimension>
+Eigen::Tensor<double, Dimension> Tensor_None(const Eigen::Tensor<double, Dimension> &tensor) {
+    return tensor;
+}
+
+template<size_t Dimension>
+Eigen::Tensor<double, Dimension> Tensor_None_Derivative(const Eigen::Tensor<double, Dimension> &tensor) {
+    Eigen::Tensor<double, Dimension> ones(tensor.dimensions());
+    ones.setConstant(1);
+    return ones;
+}
+
+
 #endif //DEEPDENDRO_ACTIV_FUNC_CONV_H

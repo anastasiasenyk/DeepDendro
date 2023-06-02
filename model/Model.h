@@ -26,7 +26,7 @@ class Model {
 public:
     Model();
 
-    void addInput(const MatrixXd &data);
+    void addInput(const Eigen::Tensor<double, 2> &data);
 
     void addOutput(const MatrixXd &labels);
 

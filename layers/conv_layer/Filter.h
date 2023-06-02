@@ -19,7 +19,6 @@ template<size_t KernelDimension>
 class Filter {
     using KernelT = Eigen::Tensor<double, KernelDimension>;
     using Shape = Eigen::array<Eigen::Index, KernelDimension>;
-
     Shape filter_shape;
     KernelT kernel_weights{};
     double bias{};
@@ -58,7 +57,6 @@ public:
         return activation_func_derivative(activated);
     }
 
-
 };
 
 
@@ -76,25 +74,24 @@ Filter<KernelDimension>::Filter(Shape filter_shape,
     }
 
 
-    for (int i = 0; i < KernelDimension - 1; i++) {
-        flip_order[i] = i + 1;
+    for (int i = 0; i < KernelDimension; i++) {
+        flip_order[i] = 1;
     }
-    flip_order[KernelDimension - 1] = 0;
 
 
     // TODO: change for all activation functions
-    this->activation_func = Tensor_ReLU<KernelDimension>;
-    this->activation_func_derivative = Tensor_ReLU_Derivative<KernelDimension>;
+    this->activation_func = (activation_func == relu) ? Tensor_ReLU<KernelDimension> : Tensor_None<KernelDimension>;
+    this->activation_func_derivative = (activation_func == relu) ? Tensor_ReLU_Derivative<KernelDimension>
+                                                                 : Tensor_None_Derivative<KernelDimension>;
 
     kernel_weights.resize(filter_shape);
     kernel_weights.setRandom();
+    kernel_weights = kernel_weights - 0.4;
 }
 
 template<size_t KernelDimension>
 Eigen::Tensor<double, KernelDimension> Filter<KernelDimension>::rotate_filter() const {
-    // by 180 degrees, first two dimensions
-    Eigen::Tensor<double, KernelDimension> rotated_filter = kernel_weights.reverse(flip_order);
-    return rotated_filter;
+    return kernel_weights.reverse(flip_order);
 }
 
 #endif //DEEPDENDRO_FILTER_H

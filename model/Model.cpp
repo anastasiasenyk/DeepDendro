@@ -9,8 +9,9 @@ Model::Model() {
     dense_layers.reserve(10);
 }
 
-void Model::addInput(const MatrixXd &data) {
-    train_data = data;
+void Model::addInput(const Eigen::Tensor<double, 2> &data) {
+    Eigen::MatrixXd data_matrix = Eigen::Map<const Eigen::MatrixXd>(data.data(), data.dimension(0), data.dimension(1));
+    train_data = data_matrix;
 }
 
 void Model::addOutput(const MatrixXd &labels) {
@@ -67,7 +68,6 @@ void Model::train(size_t epochs, double learning_rate, const bool verbose) {
                     "Loss function: " +
                     std::to_string(lossFunc().categoryCrossEntropy(dense_layers.back().getAValues(), train_labels)) +
                     ", Accuracy: " + std::to_string(accuracy) + "%"});
-
         }
 
         // calc back_prop

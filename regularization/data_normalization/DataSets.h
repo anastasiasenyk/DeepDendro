@@ -9,9 +9,12 @@
 
 #include "Layer.h"
 
+typedef Eigen::Tensor<double, 3> Tensor3d;
+typedef Eigen::Tensor<double, 2> Tensor2d;
+
 struct DataSets {
-    MatrixXd testData;
+    Tensor3d testData;
     MatrixXd testLabels;
-    MatrixXd trainData;
+    Tensor3d trainData;
     MatrixXd trainLabels;
 } ;

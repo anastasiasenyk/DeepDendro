@@ -21,7 +21,7 @@ public:
     void skipHeaders(const std::string &imageFilename, const std::string &labelFilename,
                                    int skipBytesImg, int skipBytesLab);
 
-    VectorXd readImg(int height, int width);
+    Tensor2d readImg(int height, int width);
 
     VectorXd readLbl();
 

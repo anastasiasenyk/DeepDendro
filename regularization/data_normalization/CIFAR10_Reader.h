@@ -25,4 +25,12 @@ std::pair<ImagesAndLabels, ImagesAndLabels> load_cifar10_whole(const std::string
 
 
 
+struct CIFAR10 {
+    ImagesAndLabels train;
+    ImagesAndLabels test;
+};
+
+CIFAR10 read_cifar(const std::string &dir_cifar_path);
+
+
 #endif //DEEPDENDRO_CIFAR10_READER_H

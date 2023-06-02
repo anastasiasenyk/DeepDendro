@@ -36,8 +36,23 @@ inline void check_correct(bool exp){
     }
 }
 
+inline void printTensor3D(const Eigen::Tensor<double, 3>& tensor) {
+    // Get tensor dimensions
+    int dim1 = tensor.dimension(0);
+    int dim2 = tensor.dimension(1);
+    int dim3 = tensor.dimension(2);
 
-
+    // Print tensor elements
+    for (int i = 0; i < dim1; ++i) {
+        for (int j = 0; j < dim2; ++j) {
+            for (int k = 0; k < dim3; ++k) {
+                std::cout << tensor(i, j, k) << " ";
+            }
+            std::cout << "\n";
+        }
+        std::cout << "\n";
+    }
+}
 
 
 

@@ -10,7 +10,8 @@ HiddenLayer::HiddenLayer(const int curr_neurons, MShape input_shape, activation 
         a_values{MatrixXd::Zero(curr_neurons, input_shape.second)} {
 
     auto [activFunc, activDer] = find_activation_func_DENSE(type);
-    activ_func = activFunc; activ_func_derivative = activDer;
+    activ_func = activFunc;
+    activ_func_derivative = activDer;
 
     weights *= sqrt(2 / static_cast<double>(input_shape.first));
     shape.first = curr_neurons;
@@ -20,7 +21,9 @@ HiddenLayer::HiddenLayer(const int curr_neurons, MShape input_shape, activation 
 
 void HiddenLayer::forward_prop(const MatrixXd &prev_a_values) {
     z_values = weights * prev_a_values;
+
     z_values.colwise() += biases;
+
     a_values = activ_func(z_values);
 }
 

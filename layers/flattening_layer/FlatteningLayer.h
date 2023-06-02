@@ -48,5 +48,9 @@ class FlatteningLayer2D : public FlatteningLayerBase<2> {
 class FlatteningLayer3D : public FlatteningLayerBase<3> {
 };
 
+class FlatteningLayer4D : public FlatteningLayerBase<4> {
+};
+
+
 
 #endif //DEEPDENDRO_FLATTENINGLAYER_H

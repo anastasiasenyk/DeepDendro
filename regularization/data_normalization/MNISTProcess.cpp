@@ -26,15 +26,15 @@ void MNISTProcess::skipHeaders(const std::string &imageFilename, const std::stri
     }
 }
 
-VectorXd MNISTProcess::readImg(int height, int width) {
-    MatrixXd imgMatrix(height, width);  // create a MatrixXd to store the image data
+Tensor2d MNISTProcess::readImg(int height, int width) {
+    Tensor2d imgMatrix(height, width);  // create a MatrixXd to store the image data
     for (int j = 0; j < height; ++j) {
         for (int i = 0; i < width; ++i) {
             image.read(&number, sizeof(char));
             imgMatrix(j, i) = (number==0)? 0: 1;
         }
     }
-    return VectorXd::Map(imgMatrix.data(), height * width);;
+    return imgMatrix;
 }
 
 VectorXd MNISTProcess::readLbl() {
@@ -57,23 +57,23 @@ DataSets MNISTProcess::getData(std::string pathToMNIST) {
     MNISTProcess mnistProcessTest = MNISTProcess();
     mnistProcessTest.skipHeaders(pathToMNIST + "/t10k-images.idx3-ubyte", pathToMNIST + "/t10k-labels.idx1-ubyte", 16, 8);
 
-    data.trainData = MatrixXd (784, numTrainImg);
+    data.trainData = Tensor3d(numTrainImg, 28, 28);
     data.trainLabels = MatrixXd (10, numTrainImg);
-    data.testData = MatrixXd (784, numTestImg);
+    data.testData = Tensor3d(numTestImg, 28, 28);
     data.testLabels = MatrixXd (10, numTestImg);
 
 
     for (int sample = 0; sample < numTrainImg; ++sample) {
         VectorXd oneHotLabel = mnistProcessTrain.readLbl();
-        VectorXd flattenedImage = mnistProcessTrain.readImg(28, 28);
-        data.trainData.col(sample) = flattenedImage;
+        Tensor2d flattenedImage = mnistProcessTrain.readImg(28, 28);
+        data.trainData.chip(sample, 0) = flattenedImage;
         data.trainLabels.col(sample) = oneHotLabel;
     }
 
     for (int sample = 0; sample < numTestImg; ++sample) {
         VectorXd oneHotLabel = mnistProcessTest.readLbl();
-        VectorXd flattenedImage = mnistProcessTest.readImg(28, 28);
-        data.testData.col(sample) = flattenedImage;
+        Tensor2d flattenedImage = mnistProcessTest.readImg(28, 28);
+        data.testData.chip(sample, 0) = flattenedImage;
         data.testLabels.col(sample) = oneHotLabel;
     }
     return data;

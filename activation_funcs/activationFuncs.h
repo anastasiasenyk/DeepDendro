@@ -32,8 +32,8 @@ T Tanh(const T &input) {
 
 template<typename T, typename V>
 T Softmax(const T &input) {
-    // applies softmax to every column of the matrix
-    T expMatrix = input.array().exp();
+    T centeredInput = input.array() - input.array().maxCoeff();
+    T expMatrix = centeredInput.array().exp();
     V sumExp = expMatrix.colwise().sum();
     T result = expMatrix.array().rowwise() / sumExp.transpose().array();
     return result;

@@ -4,21 +4,21 @@
 
 #include "CIFAR10_Reader.h"
 
-ImagesAndLabels load_cifar10(const std::string& filepath) {
+ImagesAndLabels load_cifar10(const std::string &filepath) {
     std::ifstream file(filepath, std::ios::binary);
-    if(file.is_open()) {
+    if (file.is_open()) {
         std::vector<char> buffer(std::istreambuf_iterator<char>(file), {});
 
         Images data_vector;
         Labels labels_vector;
 
-        for(int img = 0; img < 10000; ++img) {
-            Image data_tensor(3, 32, 32);
+        for (int img = 0; img < 10000; ++img) {
+            Image data_tensor(32, 32, 3);
             int offset = img * 3073; // start from label byte
             labels_vector.push_back(static_cast<unsigned char>(buffer[offset++]));
-            for(int ch = 0; ch < 3; ++ch) {
-                for(int px = 0; px < 32*32; ++px) {
-                    data_tensor(ch, px / 32, px % 32) = static_cast<unsigned char>(buffer[offset++]);
+            for (int ch = 0; ch < 3; ++ch) {
+                for (int px = 0; px < 32 * 32; ++px) {
+                    data_tensor(px / 32, px % 32, ch) = static_cast<unsigned char>(buffer[offset++]);
                 }
             }
             data_vector.push_back(data_tensor);
@@ -32,7 +32,7 @@ ImagesAndLabels load_cifar10(const std::string& filepath) {
 }
 
 
-std::pair<ImagesAndLabels, ImagesAndLabels> load_cifar10_whole(const std::string& cifar_dir_bins_path){
+std::pair<ImagesAndLabels, ImagesAndLabels> load_cifar10_whole(const std::string &cifar_dir_bins_path) {
     std::array<std::string, 6> bins_paths = {
             cifar_dir_bins_path + "/data_batch_1.bin",
             cifar_dir_bins_path + "/data_batch_2.bin",
@@ -44,7 +44,7 @@ std::pair<ImagesAndLabels, ImagesAndLabels> load_cifar10_whole(const std::string
 
     ImagesAndLabels training_vector;
 
-    for(size_t i = 0; i < 4; ++i) {
+    for (size_t i = 0; i < 5; ++i) {
         ImagesAndLabels data = load_cifar10(bins_paths[i]);
         training_vector.first.insert(training_vector.first.end(), data.first.begin(), data.first.end());
         training_vector.second.insert(training_vector.second.end(), data.second.begin(), data.second.end());
@@ -53,4 +53,18 @@ std::pair<ImagesAndLabels, ImagesAndLabels> load_cifar10_whole(const std::string
     ImagesAndLabels test_vector = load_cifar10(bins_paths[5]);
 
     return {training_vector, test_vector};
+}
+
+CIFAR10 read_cifar(const std::string &dir_cifar_path) {
+    auto [train_data, test_data] = load_cifar10_whole(dir_cifar_path);
+    auto [train_images, train_labels] = train_data;
+    auto [test_images, test_labels] = test_data;
+    for (auto &i: train_images) {
+        i = i.unaryExpr([](double x) { return x / 255.0 - 0.5; });
+    }
+    for (auto &i: test_images) {
+        i = i.unaryExpr([](double x) { return x / 255.0 - 0.5; });
+    }
+    return {{train_images, train_labels},
+            {test_images,  test_labels}};
 }

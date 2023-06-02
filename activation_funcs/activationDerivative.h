@@ -34,10 +34,28 @@ T TanhDer(const MatrixXd &input) {
     return input;
 }
 
+//template<typename T, typename U>
+//T SoftmaxDer(const T &input) {
+//    T softmax = Softmax<T, U>(input);
+//    T diag_softmax = softmax.array() * (1.0 - softmax.array());
+//    return diag_softmax;
+//}
+
 template<typename T, typename U>
 T SoftmaxDer(const T &input) {
     T softmax = Softmax<T, U>(input);
-    T diag_softmax = softmax.array() * (1.0 - softmax.array());
+    int length = softmax.size();
+    T diag_softmax(length, length);
+    diag_softmax.setZero();
+    for (int i = 0; i < length; i++) {
+        for (int j = 0; j < length; j++) {
+            if (i == j) {
+                diag_softmax(i, j) = softmax(i) * (1 - softmax(i));
+            } else {
+                diag_softmax(i, j) = -softmax(i) * softmax(j);
+            }
+        }
+    }
     return diag_softmax;
 }
 
@@ -54,7 +72,8 @@ enum activation {
     sigmoid,
     relu,
     tanhyper,
-    softmax
+    softmax,
+    none
 };
 
 template<typename T>
